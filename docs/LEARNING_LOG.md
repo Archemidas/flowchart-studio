@@ -88,6 +88,74 @@ positions, so it can never conflict with the primary chains. Verified on
 Two Turntables & A Mic: 19 primary chains + 7 independently-detected
 vowel-run groups, zero conflicts.
 
+## 2026-08-16 — CRITICAL: index.html/flowchart_studio.html file split
+Observed: reported symptoms (auto-transcribe stalling, missing words,
+heuristic-only engine, no live sync) persisted even after fixes were
+pushed and confirmed correct in the repo. Root cause: GitHub Pages serves
+`index.html` at the site root, but every Studio edit across recent
+sessions was pushed to a separately-named `flowchart_studio.html` file —
+the two files silently diverged, and the LIVE site kept serving an old
+`index.html` snapshot while all the real work landed in a file nobody was
+actually viewing. Confirmed via the GitHub Contents API (two files, very
+different sizes) after direct `curl` checks of the live site kept
+disagreeing with what should have been true. Fix: synced `index.html` to
+match `flowchart_studio.html`, then deleted the duplicate so there is only
+one canonical Studio file going forward. Lesson for future sessions:
+after any push intended to change the LIVE site, verify against the
+actual served root path (`/`), not just the pushed file's own path —
+pushing successfully and being live are not the same fact.
+
+## 2026-08-16 — Real CMU phonemic engine ported to Studio (JS)
+Change: `cmu_engine.js` is a line-for-line port of `flowchart_engine.py`'s
+detection pipeline (tiers, complete-linkage clustering, BPM-adaptive
+window, same candidate generation) running against a real CMU
+Pronouncing Dictionary export (`cmudict.txt`, ~125k words, plain-text
+format chosen specifically to stay under GitHub's 4MB request-body limit
+without JSON-quote-escaping bloat). Verified word-for-word identical chain
+output against the Python engine on real Duckdown lines (same colors,
+strengths, unit sizes, cross-word counts, and per-word chain/position
+tags) via a Node harness before shipping. Studio now runs this as the
+primary engine; the old spelling-heuristic engine is kept ONLY as an
+automatic fallback if the dictionary fails to fetch.
+
+## 2026-08-16 — Transcription pipeline: gate → gap-detector
+Observed (reported directly): auto-transcribe was stalling and still
+missing words. Root cause: v1 used VAD as a GATE — audio outside a
+detected "active" segment was never sent to the model at all, and each
+detected segment (often dozens per track, from ad-libs/short
+interjections) was transcribed with its own sequential async model call.
+That's slow enough to look hung, and a misjudged energy threshold could
+silently delete a passage with no downstream recovery. Fix: the PRIMARY
+pass now transcribes the whole track in one call (letting the model's own
+long-form chunk-and-merge handle it, instead of us pre-slicing into dozens
+of small calls). VAD runs AFTER, only as a coverage check — any
+vocal-active region the primary pass covered too sparsely
+(`computeWordCoverage` against a words/sec floor) gets re-transcribed
+individually and spliced in. A bad VAD threshold can now only trigger a
+wasted extra pass, never silently drop a word. VAD thresholds were also
+loosened (lower on/off energy thresholds, 1.5s gap-merge instead of
+600ms) since they no longer gate anything — erring toward "flag more
+regions" costs a little time, not correctness.
+
+## 2026-08-16 — "Follow along" was genuinely missing, not just cosmetic
+Observed (reported directly): Studio's preview and the club room's lyric
+screen never matched the reference rhyme-scheme videos' style and
+"doesn't move anything ... doesn't follow along." Confirmed true on
+inspection: `renderPreview` in Studio rendered one static colored list
+with no connection to `video.currentTime` at all, and the club room's
+`drawLyricScreen` only recolored a whole LINE at a time by a single
+majority chain color — no per-word coloring, no active-word tracking.
+Fix: added a live "Now Playing" panel in Studio (`renderNowPlaying`,
+driven by the video's `timeupdate` event) and rewrote the club room's
+`drawLyricScreen`/added `renderWordLine` to render every word in its own
+chain color with the currently-spoken word getting an active glow +
+underline, both interpolating word position within a line the same way
+(line span ÷ word count — neither track has ASR-grade per-word ground
+truth for every line). Also regenerated the club room's per-line catalog
+data by actually running `flowchart_engine.py` against both tracks' real
+lines (previously an approximated single-color-per-line reconstruction),
+so the colors shown are the real engine's per-word output, not a stand-in.
+
 ## 2026-08-16 — Club room video playback fix (CORS-tainted WebGL texture)
 Observed: the stage video screen never played in `club_room.html`; mobile
 control bars also overflowed narrow viewports. Root cause (video): the
