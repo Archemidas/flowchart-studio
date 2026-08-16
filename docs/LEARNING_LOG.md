@@ -88,6 +88,25 @@ positions, so it can never conflict with the primary chains. Verified on
 Two Turntables & A Mic: 19 primary chains + 7 independently-detected
 vowel-run groups, zero conflicts.
 
+## 2026-08-16 — On-screen text transcription (OCR) added to Studio
+Clarification from the prior request: the on-screen-text learning ask was
+for a STUDIO FEATURE, not something to run in-session against reference
+material. Built `ocrTranscribeFromVideo()` (Tesseract.js — documented,
+open-source OCR, not a black-box model) as a second, independent
+transcription input alongside the existing audio/Whisper path: samples
+video frames at a configurable interval, crops to a configurable
+region (full/top-third/bottom-third, since caption placement varies),
+recognizes text per frame, and collapses consecutive frames holding the
+same on-screen line into one timestamped entry — same output shape as the
+audio path, feeding the same line editor. Explicitly NOT a separate
+always-on storage/training pipeline: results land in the editable line
+rows the same as typed or ASR'd lines, and persist only if the user
+exports a bundle, same as every other input method. The sourcing rule is
+identical to the audio path and stated in the UI: the tool reads whatever
+is in the loaded file, same as Whisper reads whatever is in the waveform;
+which videos are appropriate to load is the same judgment call the user
+already makes, not something the tool decides for them.
+
 ## 2026-08-16 — IPA layer + custom pronunciation knowledge store
 Request: "learn from lyric videos where words follow on screen" and store
 detected rhyme-nature + phonemic pronunciations in an interlinked
