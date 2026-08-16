@@ -137,31 +137,33 @@ const CATALOG = [
     album: "Enta Da Stage (1993)",
     videoUrl: "https://pub.hyperagent.com/api/published/pbf01M01QJARG_63165HPJJZW7CASS/rhyme_scheme_video_v2.mp4",
     bpm: 98.13,
-    // Chain-tagged lines already established and approved earlier in this
-    // project for this track — reused here, not newly generated.
+    // Real per-word output from flowchart_engine.py (CMU-dictionary phonemic
+    // engine) run against this track's own confirmed lines at its detected
+    // BPM -- not hand-approximated. w=word, c=color, s=strength(p/s/a/c),
+    // x=cross-word span, sc/sf=secondary(polyphonic) color/split-fraction.
     lines: [
-      [5.0, 13.0, "Alright party people, it's about that time -- everybody off the stage.", null],
-      [13.0, 20.0, "Cuz if you trip over the wire, we gon' get Smitty to beat you up.", null],
-      [37.0, 44.5, "If you look at reality, I bet you can't SEE what I can SEE. What could you SEE, BUCK?", "A"],
-      [44.5, 52.0, "Another DUCK, getting paid off the BOARD. Now you can keep the bull if you want.", "M"],
-      [52.0, 60.0, "But I'ma fight for the right in the name of hip-hop rules -- can't nobody touch the FLAVOR.", "B"],
-      [61.0, 69.0, "One thing I hate -- the hand-out. You and your crew bite my style and play Teddy Riley, man.", null],
-      [69.0, 76.0, "Timberland on the upper HAND -- the future PLAN is to be the MAN on the mic.", "C"],
-      [76.0, 84.0, "Two turntables and a mic, one fat MC on the SET.", "A"],
-      [96.0, 104.0, "Watch me blow your back out with the verbal herb -- come test BUCK, you get SERVED.", "A"],
-      [104.0, 112.0, "Look up in the air, it's the bird -- no, it's Superman, it's Puff and Dirt.", null],
-      [112.0, 120.0, "Contact in MENACE, a colossal MC -- the recollect on SET.", "A"],
-      [120.0, 128.0, "Today you take too long to RECOGNIZE -- just because I'm not COMMERCIALIZED.", "D"],
-      [128.0, 134.0, "And when I'm in your town I rock the underground. I'd rather have a good RHYME.", "D"],
-      [134.0, 142.0, "\"Guys can't come up here.\" \"Yo, we with the band right here.\"", null],
-      [146.0, 154.0, "Count that money, Rudy Ray.", null],
-      [172.0, 180.0, "Commercial rap get the GUN CLAP -- BUCKSHOT original, that's a wrap.", "M"],
-      [180.0, 190.0, "I'm taking it back -- back to when the wax used to play the LOAFER, carrying the equipment.", "B"],
-      [190.0, 198.0, "From the BLAST, but what I MANIFEST is what I bring forth.", "M"],
-      [198.0, 208.0, "Wait a minute, remember this, REMINISCE -- whoever got DISSED.", "C"],
-      [208.0, 218.0, "They put a commercial MC in the BUSINESS to make a brother like me play the DUCK out that stage.", "M"],
-      [238.0, 246.0, "Blowin' up the spot, MC, DJ -- this is how we do today.", null],
-      [246.0, 255.0, "BUCKSHOT, BCC -- representing who I be.", "M"],
+      {start:5,end:13,words:[{w:"Alright"},{w:"party"},{w:"people"},{w:"it's"},{w:"about"},{w:"that"},{w:"time"},{w:"everybody"},{w:"off"},{w:"the"},{w:"stage"}]},
+      {start:13,end:20,words:[{w:"Cuz"},{w:"if"},{w:"you"},{w:"trip"},{w:"over"},{w:"the"},{w:"wire"},{w:"we"},{w:"gon'"},{w:"get"},{w:"Smitty"},{w:"to"},{w:"beat"},{w:"you"},{w:"up"}]},
+      {start:37,end:44.5,words:[{w:"If"},{w:"you"},{w:"look"},{w:"at"},{w:"reality"},{w:"I"},{w:"bet"},{w:"you"},{w:"can't",c:"#e8a13c",s:"p"},{w:"SEE",c:"#e0524a",s:"p"},{w:"what",c:"#5fb3a3",s:"p",x:1},{w:"I"},{w:"can",c:"#8a7fd6",s:"p"},{w:"SEE",c:"#e0524a",s:"p"},{w:"What",c:"#5fb3a3",s:"p",x:1},{w:"could"},{w:"you"},{w:"SEE",c:"#e0524a",s:"p"},{w:"BUCK",c:"#4aa3e0",s:"p"}]},
+      {start:44.5,end:52,words:[{w:"Another"},{w:"DUCK",c:"#4aa3e0",s:"p"},{w:"getting"},{w:"paid"},{w:"off"},{w:"the"},{w:"BOARD"},{w:"Now"},{w:"you"},{w:"can",c:"#8a7fd6",s:"p"},{w:"keep"},{w:"the"},{w:"bull"},{w:"if"},{w:"you"},{w:"want"}]},
+      {start:52,end:60,words:[{w:"But"},{w:"I'ma"},{w:"fight",c:"#d4af37",s:"p"},{w:"for"},{w:"the"},{w:"right",c:"#d4af37",s:"p"},{w:"in"},{w:"the"},{w:"name"},{w:"of"},{w:"hip"},{w:"hop"},{w:"rules"},{w:"can't",c:"#e8a13c",s:"p"},{w:"nobody"},{w:"touch"},{w:"the"},{w:"FLAVOR"}]},
+      {start:61,end:69,words:[{w:"One",c:"#6fbf73",s:"p"},{w:"thing"},{w:"I"},{w:"hate"},{w:"the"},{w:"hand",c:"#e07bb0",s:"p"},{w:"out"},{w:"You"},{w:"and"},{w:"your"},{w:"crew",c:"#c98a4b",s:"p"},{w:"bite",c:"#d4af37",s:"p"},{w:"my"},{w:"style"},{w:"and"},{w:"play"},{w:"Teddy"},{w:"Riley"},{w:"man",c:"#7a9fd6",s:"p"}]},
+      {start:69,end:76,words:[{w:"Timberland"},{w:"on"},{w:"the"},{w:"upper"},{w:"HAND",c:"#e07bb0",s:"p"},{w:"the"},{w:"future"},{w:"PLAN",c:"#7a9fd6",s:"p"},{w:"is"},{w:"to"},{w:"be"},{w:"the"},{w:"MAN",c:"#7a9fd6",s:"p"},{w:"on"},{w:"the"},{w:"mic",c:"#e8a13c",s:"p"}]},
+      {start:76,end:84,words:[{w:"Two",c:"#c98a4b",s:"p"},{w:"turntables"},{w:"and"},{w:"a"},{w:"mic",c:"#e8a13c",s:"p"},{w:"one",c:"#6fbf73",s:"p"},{w:"fat"},{w:"MC"},{w:"on"},{w:"the"},{w:"SET"}]},
+      {start:96,end:104,words:[{w:"Watch"},{w:"me"},{w:"blow",c:"#5fb3a3",s:"p"},{w:"your"},{w:"back"},{w:"out"},{w:"with"},{w:"the"},{w:"verbal"},{w:"herb"},{w:"come"},{w:"test"},{w:"BUCK"},{w:"you"},{w:"get",c:"#e0524a",s:"p"},{w:"SERVED"}]},
+      {start:104,end:112,words:[{w:"Look"},{w:"up"},{w:"in"},{w:"the"},{w:"air"},{w:"it's",c:"#8a7fd6",s:"p"},{w:"the"},{w:"bird"},{w:"no",c:"#5fb3a3",s:"p"},{w:"it's",c:"#8a7fd6",s:"p"},{w:"Superman"},{w:"it's",c:"#8a7fd6",s:"p"},{w:"Puff"},{w:"and"},{w:"Dirt"}]},
+      {start:112,end:120,words:[{w:"Contact"},{w:"in"},{w:"MENACE"},{w:"a"},{w:"colossal"},{w:"MC"},{w:"the"},{w:"recollect"},{w:"on"},{w:"SET",c:"#e0524a",s:"p"}]},
+      {start:120,end:128,words:[{w:"Today"},{w:"you"},{w:"take"},{w:"too"},{w:"long"},{w:"to"},{w:"RECOGNIZE"},{w:"just"},{w:"because"},{w:"I'm",c:"#4aa3e0",s:"p"},{w:"not"},{w:"COMMERCIALIZED"}]},
+      {start:128,end:134,words:[{w:"And"},{w:"when"},{w:"I'm",c:"#4aa3e0",s:"p"},{w:"in"},{w:"your"},{w:"town"},{w:"I"},{w:"rock"},{w:"the"},{w:"underground"},{w:"I'd"},{w:"rather"},{w:"have"},{w:"a"},{w:"good"},{w:"RHYME",c:"#4aa3e0",s:"p"}]},
+      {start:134,end:142,words:[{w:"Guys"},{w:"can't"},{w:"come"},{w:"up"},{w:"here",c:"#d4af37",s:"p"},{w:"Yo"},{w:"we"},{w:"with"},{w:"the"},{w:"band"},{w:"right"},{w:"here",c:"#d4af37",s:"p"}]},
+      {start:146,end:154,words:[{w:"Count"},{w:"that"},{w:"money"},{w:"Rudy"},{w:"Ray"}]},
+      {start:172,end:180,words:[{w:"Commercial"},{w:"rap",c:"#6fbf73",s:"p"},{w:"get"},{w:"the"},{w:"GUN"},{w:"CLAP",c:"#6fbf73",s:"p"},{w:"BUCKSHOT"},{w:"original"},{w:"that's"},{w:"a"},{w:"wrap",c:"#6fbf73",s:"p"}]},
+      {start:180,end:190,words:[{w:"I'm"},{w:"taking"},{w:"it"},{w:"back",c:"#e07bb0",s:"p"},{w:"back",c:"#e07bb0",s:"p"},{w:"to"},{w:"when"},{w:"the"},{w:"wax"},{w:"used"},{w:"to"},{w:"play"},{w:"the"},{w:"LOAFER"},{w:"carrying"},{w:"the"},{w:"equipment"}]},
+      {start:190,end:198,words:[{w:"From"},{w:"the"},{w:"BLAST"},{w:"but"},{w:"what",c:"#c98a4b",s:"p"},{w:"I"},{w:"MANIFEST"},{w:"is"},{w:"what",c:"#c98a4b",s:"p"},{w:"I"},{w:"bring"},{w:"forth"}]},
+      {start:198,end:208,words:[{w:"Wait"},{w:"a"},{w:"minute"},{w:"remember"},{w:"this"},{w:"REMINISCE"},{w:"whoever"},{w:"got"},{w:"DISSED"}]},
+      {start:208,end:218,words:[{w:"They",c:"#7a9fd6",s:"p"},{w:"put"},{w:"a"},{w:"commercial"},{w:"MC"},{w:"in"},{w:"the"},{w:"BUSINESS"},{w:"to"},{w:"make"},{w:"a"},{w:"brother"},{w:"like"},{w:"me"},{w:"play",c:"#7a9fd6",s:"p"},{w:"the"},{w:"DUCK"},{w:"out"},{w:"that"},{w:"stage"}]},
+      {start:238,end:246,words:[{w:"Blowin'"},{w:"up"},{w:"the"},{w:"spot"},{w:"MC"},{w:"DJ",c:"#e8a13c",s:"p"},{w:"this"},{w:"is"},{w:"how"},{w:"we"},{w:"do"},{w:"today",c:"#e8a13c",s:"p"}]},
+      {start:246,end:255,words:[{w:"BUCKSHOT"},{w:"BCC"},{w:"representing"},{w:"who"},{w:"I"},{w:"be"}]},
     ],
   },
   {
@@ -171,77 +173,75 @@ const CATALOG = [
     videoUrl: "https://pub.hyperagent.com/api/published/pbf01M05BN9QR_JESJR25S0R31AAF4/Black%20Moon%20-%20Who%20Got%20Da%20Props.mp4",
     bpm: 100.07,
     lines: [
-      [20.0, 21.9, "What up?", "#e8a13c"],
-      [21.9, 23.8, "What up?", "#e8a13c"],
-      [23.8, 25.6, "Buckshot.", null],
-      [25.6, 27.5, "Suckers want to flow but they got no show.", "#e0524a"],
-      [27.5, 29.4, "So I'ma grab the mic flip the script believe the stunt.", null],
-      [29.4, 31.2, "Buckshot the one that gets the job done.", "#4aa3e0"],
-      [31.2, 33.1, "My check, y'all get paid to wreck your set.", "#e07bb0"],
-      [33.1, 35.0, "Get ready to check cause I'ma threat to your fret.", "#e07bb0"],
-      [35.0, 38.8, "No holds barred, incomplete move fakers.", "#e0524a"],
-      [38.8, 42.6, "Rest of base and back and all to the new, I might take her.", null],
-      [42.6, 46.5, "If she's a crab I'ma diss her then slide.", "#7a9fd6"],
-      [46.5, 50.3, "If she try to rip, I got my Smith on my side.", "#7a9fd6"],
-      [50.3, 54.1, "Word of God, here I comes to make way.", "#5fb3a3"],
-      [54.1, 57.9, "Rugged and raw killing your set everyday.", "#5fb3a3"],
-      [57.9, 61.7, "Microphone check one two.", "#8a7fd6"],
-      [61.7, 65.5, "Here we go.", "#4aa3e0"],
-      [65.5, 69.4, "And I'ma let you know, who got the flow?", "#4aa3e0"],
-      [69.4, 73.2, "Spitting my words like an automatic weapon.", null],
-      [73.2, 77.0, "Suckers keep stepping cause I'ma let you know.", "#d4af37"],
-      [77.0, 79.9, "I'm the rugged operator like Arnold Schwarzenegger.", null],
-      [79.9, 82.7, "Buckshot quick to play your nigga like Sega.", "#5fb3a3"],
-      [82.7, 85.6, "Spoon trigger happy, keep my hair nappy.", null],
-      [85.6, 88.4, "When I swing an F girls call me Big Pappy.", "#4aa3e0"],
-      [88.4, 91.3, "I used to play a game called bring around the Rosy, but now I play the mic and spot the whole world knows me.", "#4aa3e0"],
-      [91.3, 94.1, "I'm shorter like a shaggy heavy when I bump rush.", null],
-      [94.1, 97.0, "You better bring your whole damn crew, I'll get your head trust sucker.", "#e07bb0"],
-      [97.0, 103.3, "Cause I'ma set it off with one shot, one trigger, one done, love heads drop.", "#c98a4b"],
-      [103.3, 109.7, "Don't even try to play me out course static.", "#4aa3e0"],
-      [109.7, 116.0, "Buckshot shorty brings sounds like an automatic.", null],
-      [116.0, 122.3, "Rip the set, my feds mad tight, cause I rock the mic and keeps the crowd hype.", "#e07bb0"],
-      [122.3, 128.7, "Straight for buck rush try crushing course chaos yo.", "#5fb3a3"],
-      [128.7, 135.0, "And I'ma let you know,", "#5fb3a3"],
-      [135.0, 138.8, "One two, melodies shows and before I flip the script you know I must keep your dozing.", "#4aa3e0"],
-      [138.8, 142.6, "Into the stage of the buckshot shorty.", null],
-      [142.6, 146.4, "Son and past the boom, keep a top four to forty.", null],
-      [146.4, 150.2, "Never ever ever get played, kill that, bust a mad cat in your back cause I'm all that straight.", "#4aa3e0"],
-      [150.2, 154.0, "From Brooklyn better known as Brooklyn, elude the hook, and your whole beats taking.", null],
-      [154.0, 159.3, "Must take charge, safeguard, I'm the man.", "#e8a13c"],
-      [159.3, 164.7, "Bust my plan and feed back on my fan.", "#e8a13c"],
-      [164.7, 170.0, "Must I loose pay dues?", null],
-      [170.0, 175.3, "I never loose when I break on fools.", "#8a7fd6"],
-      [175.3, 180.7, "Wake up you know schools.", "#8a7fd6"],
-      [180.7, 186.0, "Bust the move I get smooth like Rody, kicking like the four horse men, yeah you know me.", "#c98a4b"],
-      [186.0, 191.3, "Booming like a speaker with my 100 dollars", null],
-      [191.3, 196.7, "sneakers. Baggy black jeans and snaps back in my", null],
-      [196.7, 202.0, "beepers. Keep it fresh cut never see me without a busted flow, and I'ma let you", "#4aa3e0"],
-      [202.0, 203.0, "know. Yeah, yeah, yeah,", "#5fb3a3"],
-      [203.0, 204.0, "yeah. We just want to let you all, y'all know who got the", "#4aa3e0"],
-      [204.0, 205.0, "props. Yeah, yeah, check it out, check it out, check it out, check it out, check it", "#d4af37"],
-      [205.0, 206.0, "out.", "#e07bb0"],
-      [206.0, 207.0, "Yeah. Chuck chill", "#e8a13c"],
-      [207.0, 208.0, "out. Yes he got the", "#7a9fd6"],
-      [208.0, 209.0, "props. Red", null],
-      [209.0, 210.0, "Alert. Yes he got the", "#7a9fd6"],
-      [210.0, 211.0, "props. Kicker", null],
-      [211.0, 212.0, "breeze. Yes he got the", "#7a9fd6"],
-      [212.0, 213.0, "props. Awesome", "#8a7fd6"],
-      [213.0, 214.0, "Two. Yes they got the", "#e0524a"],
-      [214.0, 215.0, "props.", null],
-      [215.0, 216.0, "Vipi. Yes they got the", "#e0524a"],
-      [216.0, 217.0, "props. Stretcher", null],
-      [217.0, 218.0, "Armstrong. Yes they got the", "#e0524a"],
-      [218.0, 219.0, "props. Beat", null],
-      [219.0, 220.0, "Minus. Yes they got the", "#e0524a"],
-      [220.0, 221.0, "props. The whole", null],
-      [221.0, 222.0, "family. Yes they got the", "#e0524a"],
+      {start:20,end:21.9,words:[{w:"What",c:"#5fb3a3",s:"p"},{w:"up",c:"#e8a13c",s:"p",x:1}]},
+      {start:21.9,end:23.8,words:[{w:"What",c:"#5fb3a3",s:"p"},{w:"up",c:"#e8a13c",s:"p",x:1}]},
+      {start:23.8,end:25.6,words:[{w:"Buckshot"}]},
+      {start:25.6,end:27.5,words:[{w:"Suckers"},{w:"want"},{w:"to"},{w:"flow",c:"#e0524a",s:"p"},{w:"but"},{w:"they"},{w:"got"},{w:"no",c:"#e0524a",s:"p"},{w:"show",c:"#e0524a",s:"p"}]},
+      {start:27.5,end:29.4,words:[{w:"So"},{w:"I'ma"},{w:"grab",c:"#8a7fd6",s:"p"},{w:"the"},{w:"mic"},{w:"flip"},{w:"the"},{w:"script"},{w:"believe"},{w:"the"},{w:"stunt"}]},
+      {start:29.4,end:31.2,words:[{w:"Buckshot"},{w:"the"},{w:"one",c:"#4aa3e0",s:"p"},{w:"that"},{w:"gets"},{w:"the"},{w:"job"},{w:"done",c:"#4aa3e0",s:"p"}]},
+      {start:31.2,end:33.1,words:[{w:"My"},{w:"check",c:"#d4af37",s:"p"},{w:"y'all"},{w:"get",c:"#6fbf73",s:"p"},{w:"paid"},{w:"to"},{w:"wreck",c:"#d4af37",s:"p"},{w:"your"},{w:"set",c:"#e07bb0",s:"p",x:1}]},
+      {start:33.1,end:35,words:[{w:"Get",c:"#e07bb0",s:"p",x:1},{w:"ready"},{w:"to"},{w:"check",c:"#d4af37",s:"p"},{w:"cause"},{w:"I'ma"},{w:"threat",c:"#e07bb0",s:"p",x:1},{w:"to",c:"#e07bb0",s:"p",x:1},{w:"your",c:"#e07bb0",s:"p",x:1},{w:"fret",c:"#e07bb0",s:"p",x:1}]},
+      {start:35,end:38.8,words:[{w:"No",c:"#e0524a",s:"p"},{w:"holds"},{w:"barred"},{w:"incomplete"},{w:"move"},{w:"fakers"}]},
+      {start:38.8,end:42.6,words:[{w:"Rest"},{w:"of"},{w:"base"},{w:"and"},{w:"back"},{w:"and"},{w:"all"},{w:"to"},{w:"the"},{w:"new"},{w:"I"},{w:"might"},{w:"take",c:"#c98a4b",s:"p"},{w:"her"}]},
+      {start:42.6,end:46.5,words:[{w:"If"},{w:"she's"},{w:"a"},{w:"crab",c:"#8a7fd6",s:"p"},{w:"I'ma"},{w:"diss"},{w:"her"},{w:"then"},{w:"slide",c:"#7a9fd6",s:"p"}]},
+      {start:46.5,end:50.3,words:[{w:"If"},{w:"she"},{w:"try"},{w:"to"},{w:"rip"},{w:"I"},{w:"got"},{w:"my"},{w:"Smith"},{w:"on"},{w:"my"},{w:"side",c:"#7a9fd6",s:"p"}]},
+      {start:50.3,end:54.1,words:[{w:"Word"},{w:"of"},{w:"God"},{w:"here",c:"#e8a13c",s:"p"},{w:"I"},{w:"comes"},{w:"to"},{w:"make",c:"#c98a4b",s:"p"},{w:"way",c:"#5fb3a3",s:"p"}]},
+      {start:54.1,end:57.9,words:[{w:"Rugged"},{w:"and"},{w:"raw"},{w:"killing"},{w:"your"},{w:"set",c:"#e0524a",s:"p"},{w:"everyday",c:"#5fb3a3",s:"p"}]},
+      {start:57.9,end:61.7,words:[{w:"Microphone"},{w:"check"},{w:"one"},{w:"two",c:"#8a7fd6",s:"p"}]},
+      {start:61.7,end:65.5,words:[{w:"Here",c:"#e8a13c",s:"p"},{w:"we"},{w:"go",c:"#4aa3e0",s:"p"}]},
+      {start:65.5,end:69.4,words:[{w:"And"},{w:"I'ma"},{w:"let",c:"#d4af37",s:"p",x:1},{w:"you",c:"#d4af37",s:"p",x:1},{w:"know",c:"#d4af37",s:"p",x:1},{w:"who",c:"#8a7fd6",s:"p"},{w:"got"},{w:"the"},{w:"flow",c:"#4aa3e0",s:"p"}]},
+      {start:69.4,end:73.2,words:[{w:"Spitting"},{w:"my"},{w:"words"},{w:"like",c:"#6fbf73",s:"p"},{w:"an"},{w:"automatic"},{w:"weapon"}]},
+      {start:73.2,end:77,words:[{w:"Suckers"},{w:"keep",c:"#e07bb0",s:"p"},{w:"stepping"},{w:"cause"},{w:"I'ma"},{w:"let",c:"#d4af37",s:"p",x:1},{w:"you",c:"#d4af37",s:"p",x:1},{w:"know",c:"#d4af37",s:"p",x:1}]},
+      {start:77,end:79.9,words:[{w:"I'm",c:"#c98a4b",s:"p"},{w:"the"},{w:"rugged"},{w:"operator",c:"#7a9fd6",s:"p",x:1,sc:"#c98a4b",sf:0.0},{w:"like",c:"#7a9fd6",s:"p",x:1},{w:"Arnold"},{w:"Schwarzenegger"}]},
+      {start:79.9,end:82.7,words:[{w:"Buckshot"},{w:"quick",c:"#e8a13c",s:"p"},{w:"to"},{w:"play",c:"#5fb3a3",s:"p"},{w:"your"},{w:"nigga"},{w:"like",c:"#6fbf73",s:"p"},{w:"Sega"}]},
+      {start:82.7,end:85.6,words:[{w:"Spoon"},{w:"trigger"},{w:"happy"},{w:"keep",c:"#e07bb0",s:"p"},{w:"my"},{w:"hair"},{w:"nappy"}]},
+      {start:85.6,end:88.4,words:[{w:"When",c:"#e0524a",s:"p"},{w:"I"},{w:"swing",c:"#8a7fd6",s:"p"},{w:"an"},{w:"F"},{w:"girls"},{w:"call"},{w:"me",c:"#4aa3e0",s:"p"},{w:"Big"},{w:"Pappy"}]},
+      {start:88.4,end:91.3,words:[{w:"I"},{w:"used"},{w:"to"},{w:"play",c:"#5fb3a3",s:"p"},{w:"a"},{w:"game"},{w:"called"},{w:"bring",c:"#8a7fd6",s:"p"},{w:"around"},{w:"the"},{w:"Rosy"},{w:"but"},{w:"now"},{w:"I"},{w:"play",c:"#5fb3a3",s:"p"},{w:"the"},{w:"mic",c:"#e8a13c",s:"p"},{w:"and"},{w:"spot",c:"#d4af37",s:"p"},{w:"the"},{w:"whole",c:"#6fbf73",s:"p"},{w:"world"},{w:"knows"},{w:"me",c:"#4aa3e0",s:"p"}]},
+      {start:91.3,end:94.1,words:[{w:"I'm",c:"#c98a4b",s:"p"},{w:"shorter",c:"#7a9fd6",s:"p",x:1,sc:"#7a9fd6",sf:0.0},{w:"like",c:"#7a9fd6",s:"p",x:1},{w:"a"},{w:"shaggy"},{w:"heavy"},{w:"when",c:"#e0524a",s:"p"},{w:"I"},{w:"bump"},{w:"rush"}]},
+      {start:94.1,end:97,words:[{w:"You"},{w:"better"},{w:"bring",c:"#8a7fd6",s:"p"},{w:"your"},{w:"whole",c:"#6fbf73",s:"p"},{w:"damn"},{w:"crew"},{w:"I'll"},{w:"get",c:"#e07bb0",s:"p"},{w:"your"},{w:"head"},{w:"trust"},{w:"sucker"}]},
+      {start:97,end:103.3,words:[{w:"Cause"},{w:"I'ma"},{w:"set",c:"#e07bb0",s:"p"},{w:"it"},{w:"off"},{w:"with"},{w:"one",c:"#c98a4b",s:"p"},{w:"shot",c:"#d4af37",s:"p"},{w:"one",c:"#c98a4b",s:"p"},{w:"trigger"},{w:"one",c:"#c98a4b",s:"p"},{w:"done",c:"#c98a4b",s:"p"},{w:"love"},{w:"heads",c:"#7a9fd6",s:"p"},{w:"drop"}]},
+      {start:103.3,end:109.7,words:[{w:"Don't"},{w:"even"},{w:"try"},{w:"to"},{w:"play",c:"#5fb3a3",s:"p"},{w:"me",c:"#4aa3e0",s:"p"},{w:"out"},{w:"course",c:"#e8a13c",s:"p"},{w:"static"}]},
+      {start:109.7,end:116,words:[{w:"Buckshot"},{w:"shorty"},{w:"brings"},{w:"sounds"},{w:"like"},{w:"an"},{w:"automatic"}]},
+      {start:116,end:122.3,words:[{w:"Rip"},{w:"the"},{w:"set",c:"#e07bb0",s:"p"},{w:"my"},{w:"feds",c:"#7a9fd6",s:"p"},{w:"mad"},{w:"tight"},{w:"cause"},{w:"I"},{w:"rock"},{w:"the"},{w:"mic"},{w:"and"},{w:"keeps"},{w:"the"},{w:"crowd"},{w:"hype"}]},
+      {start:122.3,end:128.7,words:[{w:"Straight"},{w:"for"},{w:"buck"},{w:"rush"},{w:"try"},{w:"crushing"},{w:"course",c:"#e8a13c",s:"p"},{w:"chaos"},{w:"yo",c:"#5fb3a3",s:"p"}]},
+      {start:128.7,end:135,words:[{w:"And"},{w:"I'ma"},{w:"let",c:"#e07bb0",s:"p"},{w:"you"},{w:"know",c:"#5fb3a3",s:"p"}]},
+      {start:135,end:138.8,words:[{w:"One",c:"#e0524a",s:"p"},{w:"two"},{w:"melodies"},{w:"shows"},{w:"and"},{w:"before",c:"#8a7fd6",s:"p"},{w:"I"},{w:"flip"},{w:"the"},{w:"script"},{w:"you"},{w:"know",c:"#5fb3a3",s:"p"},{w:"I"},{w:"must",c:"#4aa3e0",s:"p"},{w:"keep",c:"#d4af37",s:"p"},{w:"your"},{w:"dozing"}]},
+      {start:138.8,end:142.6,words:[{w:"Into"},{w:"the"},{w:"stage"},{w:"of"},{w:"the"},{w:"buckshot"},{w:"shorty"}]},
+      {start:142.6,end:146.4,words:[{w:"Son",c:"#e0524a",s:"p"},{w:"and"},{w:"past"},{w:"the"},{w:"boom"},{w:"keep",c:"#d4af37",s:"p"},{w:"a"},{w:"top"},{w:"four",c:"#8a7fd6",s:"p"},{w:"to"},{w:"forty"}]},
+      {start:146.4,end:150.2,words:[{w:"Never"},{w:"ever"},{w:"ever"},{w:"get",c:"#e07bb0",s:"p"},{w:"played"},{w:"kill"},{w:"that"},{w:"bust",c:"#4aa3e0",s:"p"},{w:"a"},{w:"mad"},{w:"cat"},{w:"in"},{w:"your"},{w:"back",c:"#6fbf73",s:"p"},{w:"cause"},{w:"I'm",c:"#e07bb0",s:"p"},{w:"all"},{w:"that"},{w:"straight"}]},
+      {start:150.2,end:154,words:[{w:"From"},{w:"Brooklyn"},{w:"better"},{w:"known"},{w:"as"},{w:"Brooklyn"},{w:"elude"},{w:"the"},{w:"hook"},{w:"and"},{w:"your"},{w:"whole"},{w:"beats"},{w:"taking"}]},
+      {start:154,end:159.3,words:[{w:"Must",c:"#4aa3e0",s:"p"},{w:"take",c:"#c98a4b",s:"p"},{w:"charge"},{w:"safeguard"},{w:"I'm",c:"#e07bb0",s:"p"},{w:"the"},{w:"man",c:"#e8a13c",s:"p"}]},
+      {start:159.3,end:164.7,words:[{w:"Bust",c:"#7a9fd6",s:"p",x:1},{w:"my"},{w:"plan",c:"#e8a13c",s:"p"},{w:"and"},{w:"feed"},{w:"back",c:"#6fbf73",s:"p"},{w:"on"},{w:"my"},{w:"fan",c:"#e8a13c",s:"p"}]},
+      {start:164.7,end:170,words:[{w:"Must",c:"#7a9fd6",s:"p",x:1},{w:"I"},{w:"loose",c:"#5fb3a3",s:"p"},{w:"pay"},{w:"dues"}]},
+      {start:170,end:175.3,words:[{w:"I"},{w:"never"},{w:"loose",c:"#5fb3a3",s:"p"},{w:"when",c:"#e0524a",s:"p"},{w:"I"},{w:"break",c:"#c98a4b",s:"p"},{w:"on"},{w:"fools",c:"#8a7fd6",s:"p"}]},
+      {start:175.3,end:180.7,words:[{w:"Wake",c:"#c98a4b",s:"p"},{w:"up"},{w:"you"},{w:"know",c:"#4aa3e0",s:"p"},{w:"schools",c:"#8a7fd6",s:"p"}]},
+      {start:180.7,end:186,words:[{w:"Bust"},{w:"the"},{w:"move"},{w:"I"},{w:"get"},{w:"smooth"},{w:"like"},{w:"Rody"},{w:"kicking",c:"#d4af37",s:"p",x:1,sc:"#4aa3e0",sf:0.0},{w:"like",c:"#d4af37",s:"p",x:1},{w:"the"},{w:"four"},{w:"horse"},{w:"men",c:"#e0524a",s:"p"},{w:"yeah",c:"#6fbf73",s:"p"},{w:"you"},{w:"know",c:"#4aa3e0",s:"p"},{w:"me",c:"#e07bb0",s:"p"}]},
+      {start:186,end:191.3,words:[{w:"Booming",c:"#d4af37",s:"p",x:1},{w:"like",c:"#d4af37",s:"p",x:1},{w:"a"},{w:"speaker"},{w:"with"},{w:"my"},{w:"dollars"}]},
+      {start:191.3,end:196.7,words:[{w:"sneakers"},{w:"Baggy"},{w:"black",c:"#c98a4b",s:"p"},{w:"jeans"},{w:"and"},{w:"snaps"},{w:"back",c:"#c98a4b",s:"p"},{w:"in"},{w:"my"}]},
+      {start:196.7,end:202,words:[{w:"beepers"},{w:"Keep"},{w:"it"},{w:"fresh"},{w:"cut"},{w:"never"},{w:"see",c:"#e07bb0",s:"p"},{w:"me",c:"#e07bb0",s:"p"},{w:"without",c:"#7a9fd6",s:"p"},{w:"a"},{w:"busted"},{w:"flow",c:"#4aa3e0",s:"p"},{w:"and"},{w:"I'ma"},{w:"let",c:"#e8a13c",s:"p"},{w:"you"}]},
+      {start:202,end:203,words:[{w:"know",c:"#4aa3e0",s:"p"},{w:"Yeah",c:"#e0524a",s:"p",x:1},{w:"yeah",c:"#e0524a",s:"p",x:1},{w:"yeah",c:"#5fb3a3",s:"p",x:1}]},
+      {start:203,end:204,words:[{w:"yeah",c:"#5fb3a3",s:"p",x:1},{w:"We"},{w:"just"},{w:"want"},{w:"to"},{w:"let",c:"#e8a13c",s:"p"},{w:"you"},{w:"all"},{w:"y'all"},{w:"know",c:"#4aa3e0",s:"p"},{w:"who",c:"#8a7fd6",s:"p"},{w:"got"},{w:"the"}]},
+      {start:204,end:205,words:[{w:"props"},{w:"Yeah",c:"#e0524a",s:"p",x:1},{w:"yeah",c:"#e0524a",s:"p",x:1},{w:"check",c:"#4aa3e0",s:"p",x:1},{w:"it",c:"#4aa3e0",s:"p",x:1},{w:"out",c:"#d4af37",s:"p",x:1},{w:"check",c:"#d4af37",s:"p",x:1},{w:"it",c:"#d4af37",s:"p",x:1},{w:"out",c:"#d4af37",s:"p",x:1},{w:"check",c:"#d4af37",s:"p",x:1},{w:"it",c:"#d4af37",s:"p",x:1},{w:"out",c:"#d4af37",s:"p",x:1},{w:"check",c:"#d4af37",s:"p",x:1},{w:"it",c:"#d4af37",s:"p",x:1},{w:"out",c:"#d4af37",s:"p",x:1},{w:"check",c:"#d4af37",s:"p",x:1},{w:"it",c:"#d4af37",s:"p",x:1}]},
+      {start:205,end:206,words:[{w:"out",c:"#d4af37",s:"p",x:1}]},
+      {start:206,end:207,words:[{w:"Yeah",c:"#6fbf73",s:"p"},{w:"Chuck"},{w:"chill"}]},
+      {start:207,end:208,words:[{w:"out",c:"#7a9fd6",s:"p"},{w:"Yes",c:"#c98a4b",s:"p"},{w:"he",c:"#7a9fd6",s:"p",x:1},{w:"got",c:"#7a9fd6",s:"p",x:1},{w:"the",c:"#7a9fd6",s:"p",x:1}]},
+      {start:208,end:209,words:[{w:"props",c:"#7a9fd6",s:"p",x:1},{w:"Red"}]},
+      {start:209,end:210,words:[{w:"Alert"},{w:"Yes",c:"#c98a4b",s:"p"},{w:"he",c:"#7a9fd6",s:"p",x:1},{w:"got",c:"#7a9fd6",s:"p",x:1},{w:"the",c:"#7a9fd6",s:"p",x:1}]},
+      {start:210,end:211,words:[{w:"props",c:"#7a9fd6",s:"p",x:1},{w:"Kicker"}]},
+      {start:211,end:212,words:[{w:"breeze"},{w:"Yes",c:"#c98a4b",s:"p"},{w:"he",c:"#7a9fd6",s:"p",x:1},{w:"got",c:"#7a9fd6",s:"p",x:1},{w:"the",c:"#7a9fd6",s:"p",x:1}]},
+      {start:212,end:213,words:[{w:"props",c:"#7a9fd6",s:"p",x:1},{w:"Awesome"}]},
+      {start:213,end:214,words:[{w:"Two",c:"#8a7fd6",s:"p"},{w:"Yes",c:"#5fb3a3",s:"p",x:1},{w:"they",c:"#e0524a",s:"p",x:1},{w:"got",c:"#e0524a",s:"p",x:1},{w:"the",c:"#e0524a",s:"p",x:1}]},
+      {start:214,end:215,words:[{w:"props",c:"#e0524a",s:"p",x:1}]},
+      {start:215,end:216,words:[{w:"Vipi"},{w:"Yes",c:"#5fb3a3",s:"p",x:1},{w:"they",c:"#e0524a",s:"p",x:1},{w:"got",c:"#e0524a",s:"p",x:1},{w:"the",c:"#e0524a",s:"p",x:1}]},
+      {start:216,end:217,words:[{w:"props",c:"#e0524a",s:"p",x:1},{w:"Stretcher"}]},
+      {start:217,end:218,words:[{w:"Armstrong"},{w:"Yes",c:"#5fb3a3",s:"p",x:1},{w:"they",c:"#e0524a",s:"p",x:1},{w:"got",c:"#e0524a",s:"p",x:1},{w:"the",c:"#e0524a",s:"p",x:1}]},
+      {start:218,end:219,words:[{w:"props",c:"#e0524a",s:"p",x:1},{w:"Beat"}]},
+      {start:219,end:220,words:[{w:"Minus"},{w:"Yes",c:"#5fb3a3",s:"p",x:1},{w:"they",c:"#e0524a",s:"p",x:1},{w:"got",c:"#e0524a",s:"p",x:1},{w:"the",c:"#e0524a",s:"p",x:1}]},
+      {start:220,end:221,words:[{w:"props",c:"#e0524a",s:"p",x:1},{w:"The"},{w:"whole"}]},
+      {start:221,end:222,words:[{w:"family"},{w:"Yes",c:"#5fb3a3",s:"p",x:1},{w:"they",c:"#5fb3a3",s:"p",x:1},{w:"got",c:"#e8a13c",s:"p",x:1},{w:"the"}]},
     ],
   },
 ];
-const RHYME_COLORS = { A: "#e8a13c", B: "#5fb3a3", C: "#c23b2b", D: "#8a7fd6", E: "#d4af37", M: "#ff5a3c" };
-
 let currentTrack = CATALOG[0];
 
 /* =========================================================================
@@ -463,6 +463,79 @@ function loadTrack(track) {
 }
 loadTrack(currentTrack);
 
+// Word-wraps a line's per-word colored tokens into centered rows that fit
+// maxWidth, given the font already set on lctx. Returns rows of
+// {word, color, isActive, width} plus each row's total width for centering.
+function wrapWords(wordObjs, maxWidth, spaceWidth) {
+  const rows = [];
+  let row = [], rowWidth = 0;
+  for (const wd of wordObjs) {
+    const wordWidth = lctx.measureText(wd.word).width;
+    const addWidth = (row.length ? spaceWidth : 0) + wordWidth;
+    if (rowWidth + addWidth > maxWidth && row.length) {
+      rows.push({ words: row, width: rowWidth });
+      row = []; rowWidth = 0;
+    }
+    row.push({ ...wd, width: wordWidth });
+    rowWidth += (row.length > 1 ? spaceWidth : 0) + wordWidth;
+  }
+  if (row.length) rows.push({ words: row, width: rowWidth });
+  return rows;
+}
+
+// Renders one lyric line as individually-colored words (matching the
+// "rhyme scheme highlighted" reference style: each rhyming word tinted by
+// its chain color) with the currently-spoken word given an active glow so
+// the screen visibly follows along with playback, not just swaps whole
+// lines. activeWordIdx is null for faded prev/next context lines.
+function renderWordLine(line, y, opacity, big, activeWordIdx) {
+  const fontPx = big ? 34 : 24;
+  const weight = big ? 'bold' : '300';
+  lctx.font = `${weight} ${fontPx}px 'Courier New', monospace`;
+  const spaceWidth = lctx.measureText(' ').width;
+  const maxWidth = lyricCanvas.width * 0.86;
+
+  const wordObjs = line.words.map(wd => ({
+    word: wd.w,
+    color: wd.c || (big ? '#f4ead9' : '#8a7a62'),
+  }));
+  const rows = wrapWords(wordObjs, maxWidth, spaceWidth);
+  const lh = big ? 44 : 30;
+  const startY = y - (rows.length - 1) * lh / 2;
+
+  let globalWordIdx = 0;
+  rows.forEach((row, ri) => {
+    const rowY = startY + ri * lh;
+    let x = (lyricCanvas.width - row.width) / 2;
+    row.words.forEach(wd => {
+      const isActive = big && globalWordIdx === activeWordIdx;
+      lctx.textAlign = 'left';
+      if (isActive) {
+        // active-word glow: soft rounded highlight behind the current word
+        lctx.globalAlpha = opacity;
+        lctx.fillStyle = wd.color + '33';
+        const pad = 6;
+        lctx.fillRect(x - pad, rowY - fontPx * 0.78, wd.width + pad * 2, fontPx * 1.15);
+      }
+      lctx.globalAlpha = isActive ? 1 : opacity * (wd.color !== '#8a7a62' && wd.color !== '#f4ead9' ? 1 : 0.75);
+      lctx.fillStyle = wd.color;
+      lctx.fillText(wd.word, x, rowY);
+      if (isActive) {
+        lctx.strokeStyle = wd.color;
+        lctx.lineWidth = 3;
+        lctx.beginPath();
+        lctx.moveTo(x, rowY + fontPx * 0.32);
+        lctx.lineTo(x + wd.width, rowY + fontPx * 0.32);
+        lctx.stroke();
+      }
+      x += wd.width + spaceWidth;
+      globalWordIdx++;
+    });
+  });
+  lctx.globalAlpha = 1;
+  lctx.textAlign = 'center';
+}
+
 function drawLyricScreen(t) {
   const w = lyricCanvas.width, h = lyricCanvas.height;
   lctx.fillStyle = '#0a0508';
@@ -473,7 +546,7 @@ function drawLyricScreen(t) {
 
   const lines = currentTrack.lines;
   let idx = -1;
-  for (let i = 0; i < lines.length; i++) { if (t >= lines[i][0]) idx = i; else break; }
+  for (let i = 0; i < lines.length; i++) { if (t >= lines[i].start) idx = i; else break; }
 
   lctx.textAlign = 'center';
   lctx.font = "bold 30px 'Courier New', monospace";
@@ -491,36 +564,22 @@ function drawLyricScreen(t) {
   const rowH = 96;
   const centerY = h / 2;
 
-  function wrap(text, maxWidth) {
-    const words = text.split(' ');
-    let line = '', out = [];
-    for (const word of words) {
-      const test = line + word + ' ';
-      if (lctx.measureText(test).width > maxWidth && line !== '') { out.push(line); line = word + ' '; }
-      else line = test;
-    }
-    out.push(line);
-    return out;
+  // Which word in the active line is "being spoken right now" — interpolated
+  // linearly across the line's [start,end] span and its word count (the same
+  // interpolation flowchart_engine.py itself uses internally for its own
+  // per-word timing estimate, since neither track has ASR-grade per-word
+  // ground truth). Good enough to visibly track playback, not frame-exact.
+  function activeWordIndexFor(line, time) {
+    if (!line.words.length) return -1;
+    const span = Math.max(0.001, line.end - line.start);
+    const frac = Math.max(0, Math.min(0.999, (time - line.start) / span));
+    return Math.floor(frac * line.words.length);
   }
 
-  function renderLine(i, y, opacity, big) {
-    if (i < 0 || i >= lines.length) return;
-    const [, , text, key] = lines[i];
-    const color = key ? (key.startsWith('#') ? key : RHYME_COLORS[key]) : '#f4ead9';
-    lctx.globalAlpha = opacity;
-    lctx.font = (big ? 'bold 32px' : '300 24px') + " 'Courier New', monospace";
-    lctx.fillStyle = big ? color : '#8a7a62';
-    const wrapped = wrap(text, w * 0.86);
-    const lh = big ? 40 : 30;
-    const startY = y - (wrapped.length - 1) * lh / 2;
-    wrapped.forEach((l, k) => lctx.fillText(l.trim(), w / 2, startY + k * lh));
-    lctx.globalAlpha = 1;
-  }
-
-  renderLine(idx - 1, centerY - rowH * 2.2, 0.3, false);
-  renderLine(idx, centerY - rowH * 0.6, 1.0, true);
-  renderLine(idx + 1, centerY + rowH * 1.2, 0.35, false);
-  renderLine(idx + 2, centerY + rowH * 2.6, 0.2, false);
+  if (idx - 1 >= 0) renderWordLine(lines[idx - 1], centerY - rowH * 2.2, 0.3, false, null);
+  renderWordLine(lines[idx], centerY - rowH * 0.6, 1.0, true, activeWordIndexFor(lines[idx], t));
+  if (idx + 1 < lines.length) renderWordLine(lines[idx + 1], centerY + rowH * 1.2, 0.35, false, null);
+  if (idx + 2 < lines.length) renderWordLine(lines[idx + 2], centerY + rowH * 2.6, 0.2, false, null);
 
   lyricTexture.needsUpdate = true;
 }
