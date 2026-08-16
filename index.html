@@ -105,6 +105,9 @@
       <div id="lineRows"></div>
       <button class="add-line" id="addLineBtn">+ Add line</button>
       <div class="toolbar">
+        <label style="display:inline-flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--dim);margin-right:0.6rem;">
+          <input type="checkbox" id="isolateVocalsToggle" checked> Isolate vocals (center-channel)
+        </label>
         <button class="btn secondary" id="autoTranscribeBtn">Auto-Transcribe from Video</button>
         <button class="btn primary" id="computeBtn">Compute Flow Chart</button>
         <button class="btn secondary" id="exportBtn" disabled>Export Bundle (.json)</button>
@@ -479,7 +482,36 @@ function detectVoiceActivity(samples, sr, opts = {}) {
   return merged.length ? merged : [{ start: 0, end: samples.length / sr }];
 }
 
-async function decodeVideoToMono16k(file) {
+/* ============== VOCAL ISOLATION (center-channel + vocal-band emphasis) ==============
+   Evaluated csukuangfj/sherpa-onnx-spleeter-2stems (an ONNX Spleeter build,
+   found via the same Hugging Face search as the VAD/ASR models) as a proper
+   source-separation option. Not integrated: Spleeter's real architecture
+   operates on precise STFT magnitude spectrograms with specific FFT/hop
+   parameters, and the repo carries no documented I/O spec to confirm
+   against. Wiring that blind, with no way to verify the output is actually
+   correct, is the same category of risk already flagged for silero-vad —
+   holding that same line here rather than shipping something unverifiable.
+
+   What's implemented instead is a real, verifiable DSP technique: most
+   mixes pan lead vocals to the center, so extracting the MID channel
+   (L+R)/2 naturally suppresses hard-panned instruments while keeping
+   center-panned content (vocals, often kick/bass too — this is a genuine
+   limitation, not hidden: it isn't full source separation, it's center-
+   channel extraction, a real but different and weaker technique). Followed
+   by a band-pass emphasis around the vocal formant range to further
+   improve the signal VAD/ASR actually need to work with. Verifiable with
+   synthetic test tones (panned vs. centered), unlike a black-box model. */
+
+function isolateVocalsMidSide(decoded) {
+  if (decoded.numberOfChannels < 2) return null; // nothing to isolate from mono
+  const L = decoded.getChannelData(0);
+  const R = decoded.getChannelData(1);
+  const mid = new Float32Array(L.length);
+  for (let i = 0; i < L.length; i++) mid[i] = (L[i] + R[i]) * 0.5;
+  return mid;
+}
+
+async function decodeVideoToMono16k(file, isolateVocals = false) {
   setStatus('Decoding audio track from video...');
   const arrayBuffer = await file.arrayBuffer();
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -487,24 +519,42 @@ async function decodeVideoToMono16k(file) {
   const decoded = await tempCtx.decodeAudioData(arrayBuffer.slice(0));
   tempCtx.close();
 
+  // downmix to mono before resampling — via center-channel isolation if
+  // requested and the source is actually stereo, otherwise a plain average
+  let monoData;
+  if (isolateVocals && decoded.numberOfChannels > 1) {
+    setStatus('Isolating center-channel (vocal-forward) content...');
+    monoData = isolateVocalsMidSide(decoded);
+  } else if (decoded.numberOfChannels > 1) {
+    monoData = new Float32Array(decoded.length);
+    for (let ch = 0; ch < decoded.numberOfChannels; ch++) {
+      const chData = decoded.getChannelData(ch);
+      for (let i = 0; i < chData.length; i++) monoData[i] = (monoData[i] || 0) + chData[i] / decoded.numberOfChannels;
+    }
+  } else {
+    monoData = decoded.getChannelData(0);
+  }
+
+  const tmp2 = new (window.AudioContext || window.webkitAudioContext)();
+  const monoBuffer = tmp2.createBuffer(1, monoData.length, decoded.sampleRate);
+  monoBuffer.copyToChannel(monoData, 0);
+
   const targetRate = 16000;
   const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * targetRate), targetRate);
   const src = offline.createBufferSource();
-
-  // downmix to mono if needed before resampling
-  let monoBuffer = decoded;
-  if (decoded.numberOfChannels > 1) {
-    const tmp = new AudioContext();
-    monoBuffer = tmp.createBuffer(1, decoded.length, decoded.sampleRate);
-    const mixed = monoBuffer.getChannelData(0);
-    for (let ch = 0; ch < decoded.numberOfChannels; ch++) {
-      const chData = decoded.getChannelData(ch);
-      for (let i = 0; i < chData.length; i++) mixed[i] = (mixed[i] || 0) + chData[i] / decoded.numberOfChannels;
-    }
-    tmp.close();
-  }
   src.buffer = monoBuffer;
-  src.connect(offline.destination);
+
+  if (isolateVocals) {
+    // vocal-formant band-pass emphasis: cuts sub-bass rumble and cymbal/hat
+    // shimmer that VAD's energy threshold would otherwise react to
+    const hp = offline.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 200; hp.Q.value = 0.7;
+    const lp = offline.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 3800; lp.Q.value = 0.7;
+    src.connect(hp); hp.connect(lp); lp.connect(offline.destination);
+  } else {
+    src.connect(offline.destination);
+  }
   src.start(0);
   const rendered = await offline.startRendering();
   return rendered.getChannelData(0);
@@ -561,7 +611,8 @@ document.getElementById('autoTranscribeBtn').addEventListener('click', async () 
   const btn = document.getElementById('autoTranscribeBtn');
   btn.disabled = true;
   try {
-    const audioData = await decodeVideoToMono16k(file);
+    const isolateVocals = document.getElementById('isolateVocalsToggle').checked;
+    const audioData = await decodeVideoToMono16k(file, isolateVocals);
     const sr = 16000;
 
     setStatus('Detecting vocal-active regions...');
