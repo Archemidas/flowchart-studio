@@ -13,6 +13,17 @@
       "vowelRunCount": 7,
       "room": "club_room.html",
       "studioCompatible": true
+    },
+    {
+      "id": "wgtp",
+      "title": "Who Got Da Props",
+      "artist": "Black Moon",
+      "album": "Enta Da Stage (1993)",
+      "bpm": 100.07,
+      "beatsPerBar": 4,
+      "chainCount": 63,
+      "room": "club_room.html",
+      "studioCompatible": true
     }
   ]
 }
