@@ -88,6 +88,28 @@ positions, so it can never conflict with the primary chains. Verified on
 Two Turntables & A Mic: 19 primary chains + 7 independently-detected
 vowel-run groups, zero conflicts.
 
+## 2026-08-16 — Club room video playback fix (CORS-tainted WebGL texture)
+Observed: the stage video screen never played in `club_room.html`; mobile
+control bars also overflowed narrow viewports. Root cause (video): the
+video element had `crossOrigin='anonymous'` set so it could feed a
+`THREE.VideoTexture`, but the published video host (pub.hyperagent.com)
+sends no `Access-Control-Allow-Origin` header (confirmed via `curl -I`).
+A `crossOrigin` request against a host with no CORS headers fails outright
+— the video never loads, so nothing plays. Removing `crossOrigin` would
+have fixed loading but broken the WebGL texture instead (uploading a
+cross-origin, non-CORS video frame into a WebGL texture throws a
+tainted-canvas `SecurityError` on `texImage2D`). Fix: stopped feeding the
+video through a WebGL texture entirely — added a `CSS3DRenderer` layer
+behind the (now alpha-transparent-cleared) WebGL canvas and render the
+actual `<video>` DOM element there as a `CSS3DObject`, positioned/scaled
+to sit exactly where the old WebGL video plane was. Plain DOM video
+playback needs no CORS headers at all. Known limitation: CSS3DRenderer
+doesn't support WebXR stereo presentation, so the video layer is hidden
+while in a VR session (documented in docs/ROOM.md). Root cause (mobile
+overflow): `#stageControls` had no max-width/wrap and depended on
+fixed pixel widths; fixed with `max-width:92vw`, `flex-wrap`, and a
+480px-wide media query shrinking controls, joysticks, and the jump button.
+
 ## 2026-08-16 — Club room + documentation pass
 Change: built `club_room.html` (90s club aesthetic, WASD/touch/VR
 movement, jump physics on a raised stage platform, proximity-triggered
