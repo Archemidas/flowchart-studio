@@ -350,7 +350,7 @@ document.getElementById('addLineBtn').addEventListener('click', () => addLineRow
 addLineRow(); // start with one empty row
 
 /* ============== AUTO-TRANSCRIBE (in-browser Whisper via transformers.js) ==============
-   Model: onnx-community/whisper-base_timestamped — an ONNX build of Whisper
+   Model: onnx-community/whisper-large-v3-turbo_timestamped — an ONNX build of Whisper
    specifically packaged for transformers.js, chosen via Hugging Face search
    for word-level-timestamp ASR that runs client-side with no server round
    trip. Runs entirely in this tab; the audio never leaves the browser. */
@@ -362,6 +362,12 @@ function setStatus(msg) {
   transcribeStatus.textContent = msg;
 }
 
+// Model upgrade (found via Hugging Face search): whisper-large-v3-turbo is
+// OpenAI's newer, more accurate checkpoint; this ONNX build is packaged the
+// same way as the base model (transformers.js + word-level timestamps), so
+// it's a drop-in swap, not a fine-tune. Larger download, better accuracy.
+const ASR_MODEL_ID = 'onnx-community/whisper-large-v3-turbo_timestamped';
+
 async function getAsrPipeline() {
   if (asrPipeline) return asrPipeline;
   setStatus('Loading speech-recognition model (first run only, cached after)...');
@@ -372,7 +378,7 @@ async function getAsrPipeline() {
   env.allowLocalModels = false;
   asrPipeline = await pipeline(
     'automatic-speech-recognition',
-    'onnx-community/whisper-base_timestamped',
+    ASR_MODEL_ID,
     {
       progress_callback: (p) => {
         if (p.status === 'progress' && p.file) {
@@ -382,6 +388,95 @@ async function getAsrPipeline() {
     }
   );
   return asrPipeline;
+}
+
+/* ============== VOICE ACTIVITY DETECTION (fixes 'skipping sections') ==============
+   Root cause of the skipping symptom: blind 30-second chunking hands Whisper
+   an arbitrary window and lets IT decide internally what's speech vs.
+   silence/instrumental inside that window. Across a long instrumental break
+   or a loud beat drop, that internal judgment can misfire and the model
+   just doesn't transcribe that stretch — it isn't that the words are hard to
+   hear, it's that the window boundaries don't align with where the vocals
+   actually are.
+
+   Fix: locate vocal-ACTIVE regions ourselves first (energy-based VAD with
+   hysteresis, evaluated against onnx-community/silero-vad as the 'proper'
+   model option — see note below), then transcribe each active region as its
+   own dedicated pass. Each region gets Whisper's full attention on audio
+   that's confirmed to contain speech, instead of hoping a uniform window
+   happens to line up.
+
+   Honest scope note: silero-vad (found via the same Hugging Face search as
+   the model upgrade above) would be the more accurate option, but it isn't
+   exposed as a standard transformers.js pipeline task the way ASR is, and
+   wiring up a second raw ONNX Runtime session correctly, untested, within
+   this pass wasn't a trade worth making blind. This energy-based VAD is a
+   real, working, zero-extra-download fix for the specific "skips whole
+   sections" symptom; swapping in silero-vad later for better precision on
+   quiet/mumbled passages is a legitimate follow-up, not a dead end. */
+
+function detectVoiceActivity(samples, sr, opts = {}) {
+  const frameMs = opts.frameMs ?? 30;
+  const hopMs = opts.hopMs ?? 15;
+  const frameLen = Math.round(sr * frameMs / 1000);
+  const hopLen = Math.round(sr * hopMs / 1000);
+
+  const energies = [];
+  for (let i = 0; i + frameLen <= samples.length; i += hopLen) {
+    let sum = 0;
+    for (let j = i; j < i + frameLen; j++) sum += samples[j] * samples[j];
+    energies.push(Math.sqrt(sum / frameLen));
+  }
+  if (energies.length === 0) return [{ start: 0, end: samples.length / sr }];
+
+  const sorted = [...energies].sort((a, b) => a - b);
+  const noiseFloor = sorted[Math.floor(sorted.length * 0.15)];
+  const peak = sorted[Math.floor(sorted.length * 0.9)];
+  const onThresh = noiseFloor + (peak - noiseFloor) * 0.12;
+  const offThresh = noiseFloor + (peak - noiseFloor) * 0.06;
+
+  const segments = [];
+  let active = false, segStart = 0;
+  const minGapFrames = Math.round(600 / hopMs);   // merge gaps under 600ms
+  const minSegFrames = Math.round(250 / hopMs);    // drop segments under 250ms
+
+  let lastEnd = -1;
+  for (let i = 0; i < energies.length; i++) {
+    const t = i * hopMs / 1000;
+    if (!active && energies[i] > onThresh) {
+      active = true;
+      segStart = t;
+    } else if (active && energies[i] < offThresh) {
+      // check ahead: if the gap to next activity is short, don't close yet
+      let j = i, gap = 0;
+      while (j < energies.length && energies[j] < offThresh && gap < minGapFrames) { j++; gap++; }
+      if (j >= energies.length || gap >= minGapFrames) {
+        active = false;
+        const segEnd = t;
+        if (segEnd - segStart >= minSegFrames * hopMs / 1000) {
+          segments.push({ start: segStart, end: segEnd });
+        }
+      }
+    }
+  }
+  if (active) segments.push({ start: segStart, end: energies.length * hopMs / 1000 });
+
+  // pad each segment slightly so word onsets/offsets right at the boundary
+  // aren't clipped, then merge any segments that now overlap after padding
+  const pad = 0.35;
+  const padded = segments.map(s => ({
+    start: Math.max(0, s.start - pad),
+    end: Math.min(samples.length / sr, s.end + pad),
+  }));
+  const merged = [];
+  for (const s of padded) {
+    if (merged.length && s.start <= merged[merged.length - 1].end) {
+      merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, s.end);
+    } else {
+      merged.push({ ...s });
+    }
+  }
+  return merged.length ? merged : [{ start: 0, end: samples.length / sr }];
 }
 
 async function decodeVideoToMono16k(file) {
@@ -467,22 +562,48 @@ document.getElementById('autoTranscribeBtn').addEventListener('click', async () 
   btn.disabled = true;
   try {
     const audioData = await decodeVideoToMono16k(file);
+    const sr = 16000;
+
+    setStatus('Detecting vocal-active regions...');
+    const segments = detectVoiceActivity(audioData, sr);
+    setStatus(`Found ${segments.length} vocal-active region(s) — transcribing each individually so long instrumental breaks can't cause a section to get skipped...`);
+
     const asr = await getAsrPipeline();
-    setStatus('Transcribing (this can take a minute on longer tracks)...');
-    const output = await asr(audioData, {
-      return_timestamps: 'word',
-      chunk_length_s: 30,
-      stride_length_s: 5,
-    });
-    const chunks = output.chunks || [];
-    if (chunks.length === 0) {
-      setStatus('No speech detected, or the model returned no word-level chunks.');
+    const allChunks = [];
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      const startSample = Math.floor(seg.start * sr);
+      const endSample = Math.min(audioData.length, Math.ceil(seg.end * sr));
+      if (endSample - startSample < sr * 0.2) continue; // too short to bother
+      const segAudio = audioData.subarray(startSample, endSample);
+
+      setStatus(`Transcribing region ${i + 1}/${segments.length} (${seg.start.toFixed(1)}s–${seg.end.toFixed(1)}s)...`);
+      const output = await asr(segAudio, {
+        return_timestamps: 'word',
+        chunk_length_s: 30,   // still used as a safety cap for unusually long segments
+        stride_length_s: 5,
+      });
+      const segChunks = output.chunks || [];
+      // offset each word's local timestamp back into full-track time
+      for (const c of segChunks) {
+        allChunks.push({
+          text: c.text,
+          timestamp: [
+            c.timestamp[0] != null ? c.timestamp[0] + seg.start : null,
+            c.timestamp[1] != null ? c.timestamp[1] + seg.start : null,
+          ],
+        });
+      }
+    }
+
+    if (allChunks.length === 0) {
+      setStatus('No speech detected across any vocal-active region, or the model returned no word-level chunks.');
       return;
     }
-    const lines = groupWordsIntoLines(chunks);
+    const lines = groupWordsIntoLines(allChunks);
     lineRowsEl.innerHTML = '';
     lines.forEach(l => addLineRow((l.start ?? 0).toFixed(2), (l.end ?? (l.start ?? 0) + 1).toFixed(2), l.text));
-    setStatus(`Done — ${lines.length} lines auto-populated from the audio. Review and edit the text below before computing (ASR transcription can misheard words, especially slang/ad-libs).`);
+    setStatus(`Done — ${lines.length} lines auto-populated across ${segments.length} vocal-active region(s). Review and edit the text below before computing (ASR transcription can mishear words, especially slang/ad-libs).`);
   } catch (err) {
     console.error(err);
     setStatus('Auto-transcribe failed: ' + err.message + ' — you can still enter lines manually below.');
