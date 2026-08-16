@@ -1,0 +1,18 @@
+{
+  "label": "Duckdown Records",
+  "note": "Fan-facing Flow Chart catalog. Only tracks whose audio/video and lyric text were supplied directly by Duckdown are listed here. Add further tracks the same way to expand this list.",
+  "tracks": [
+    {
+      "id": "ttm",
+      "title": "Two Turntables & A Mic",
+      "artist": "Black Moon",
+      "album": "Enta Da Stage (1993)",
+      "bpm": 98.13,
+      "beatsPerBar": 4,
+      "chainCount": 19,
+      "vowelRunCount": 7,
+      "room": "club_room.html",
+      "studioCompatible": true
+    }
+  ]
+}

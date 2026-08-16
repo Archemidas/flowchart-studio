@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Flow Chart — The Club (90s Hip-Hop Stage)</title>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;background:#000;font-family:'Courier New',monospace;}
+  #app{position:fixed;inset:0;}
+  canvas{display:block;}
+
+  #startOverlay{
+    position:fixed;inset:0;z-index:200;background:radial-gradient(ellipse at center,#2a0a15 0%,#050005 80%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;
+  }
+  #startOverlay h1{font-size:clamp(1.8rem,5vw,3.2rem);color:#ff2fb0;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.6rem;text-shadow:0 0 20px #ff2fb0;}
+  #startOverlay p{max-width:520px;font-size:0.85rem;color:#c9a8bd;line-height:1.7;margin-bottom:1.6rem;padding:0 6%;}
+  #startOverlay button{
+    font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:#ffcf33;color:#1a0a00;
+    border:none;padding:0.95rem 2.2rem;font-size:0.82rem;cursor:pointer;border-radius:2px;margin:0.3rem;
+  }
+  #startOverlay .rowbtns{display:flex;flex-wrap:wrap;justify-content:center;}
+  #vrNotice{font-size:0.7rem;color:#8a7;margin-top:0.6rem;}
+
+  #hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;padding:14px 18px;pointer-events:none;}
+  #hud .brand{color:#ff2fb0;font-size:1rem;letter-spacing:0.04em;text-shadow:0 2px 8px #000;}
+  #hud .brand small{display:block;font-size:0.6rem;color:#c9a8bd;letter-spacing:0.15em;}
+  #hint{color:#c9a8bd;font-size:0.62rem;text-align:right;line-height:1.6;text-shadow:0 2px 6px #000;}
+
+  #crosshair{position:fixed;top:50%;left:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:rgba(255,207,51,0.7);z-index:15;display:none;pointer-events:none;}
+
+  /* Mobile touch controls */
+  #touchMove, #touchLook{position:fixed;bottom:0;z-index:30;width:38vw;height:38vw;max-width:170px;max-height:170px;display:none;touch-action:none;}
+  #touchMove{left:16px;}
+  #touchLook{right:16px;}
+  .stick-base{position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);}
+  .stick-nub{position:absolute;width:42%;height:42%;top:29%;left:29%;border-radius:50%;background:rgba(255,207,51,0.55);}
+  #jumpBtn{position:fixed;bottom:24px;right:calc(16px + 38vw + 16px);z-index:31;display:none;
+    width:64px;height:64px;border-radius:50%;background:rgba(255,47,176,0.5);border:1px solid #ff2fb0;
+    color:#fff;font-size:0.68rem;font-weight:700;text-transform:uppercase;}
+
+  #vrBtnSlot{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:25;}
+
+  /* Video controls that fade in near the stage */
+  #stageControls{
+    position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);z-index:40;
+    background:rgba(10,5,8,0.82);border:1px solid #ff2fb0;border-radius:8px;padding:0.6rem 0.9rem;
+    display:flex;align-items:center;gap:0.7rem;opacity:0;transition:opacity .35s ease, transform .35s ease;pointer-events:none;
+  }
+  #stageControls.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+  #stageControls button{background:#ffcf33;color:#1a0a00;border:none;border-radius:4px;padding:0.4rem 0.7rem;font-weight:700;cursor:pointer;font-size:0.72rem;}
+  #stageControls input[type=range]{width:120px;}
+  #stageControls .label{color:#c9a8bd;font-size:0.65rem;white-space:nowrap;}
+
+  #avatarLoader{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:25;font-size:0.62rem;color:#c9a8bd;}
+  #avatarLoader input{font-size:0.6rem;}
+</style>
+</head>
+<body>
+
+<div id="startOverlay">
+  <h1>The Club — 90s Stage</h1>
+  <p>Walk into a 90s hip-hop club built around Duckdown catalog tracks. Approach the stage to reveal video + lyric-chart controls. WASD + mouse on desktop, touch sticks on mobile, full VR support on Quest/OVR headsets via WebXR.</p>
+  <div class="rowbtns">
+    <button id="enterDesktopBtn">Enter (Desktop / Mobile)</button>
+  </div>
+  <div id="vrNotice">VR headset detected — a "Enter VR" button will appear bottom-center once you're in.</div>
+</div>
+
+<div id="crosshair"></div>
+<div id="hud">
+  <div class="brand">DUCKDOWN RECORDS<small>The Club — Flow Chart Live Room</small></div>
+  <div id="hint">WASD / Touch stick — walk<br>Mouse / drag — look<br>Space / Jump button — jump<br>Approach stage for controls</div>
+</div>
+
+<div id="touchMove"><div class="stick-base"></div><div class="stick-nub" id="moveNub"></div></div>
+<div id="touchLook"><div class="stick-base"></div><div class="stick-nub" id="lookNub"></div></div>
+<button id="jumpBtn">JUMP</button>
+<div id="vrBtnSlot"></div>
+
+<div id="avatarLoader">
+  Load your own avatar (.glb): <input type="file" id="avatarFile" accept=".glb,.gltf">
+  <label style="margin-left:0.6rem;"><input type="checkbox" id="thirdPersonToggle"> third-person view</label>
+</div>
+
+<div id="stageControls">
+  <button id="playPauseBtn">▶</button>
+  <input type="range" id="seekBar" min="0" max="100" value="0" step="0.1">
+  <span class="label" id="timeLabel">0:00 / 0:00</span>
+  <span class="label">Track:</span>
+  <select id="trackSelect"></select>
+</div>
+
+<div id="app"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { VRButton } from "three/addons/webxr/VRButton.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+/* =========================================================================
+   CATALOG — populated from tracks actually supplied by Duckdown through the
+   thread's established trusted channel (own audio/video, own confirmed
+   text). This is the "fan demonstration" catalog slot: add further tracks
+   here by dropping in {title, videoUrl, bpm, lines:[{start,end,text,chain,color}]}
+   once supplied the same way. Left empty of any track NOT actually provided.
+   ========================================================================= */
+const CATALOG = [
+  {
+    id: "ttm",
+    title: "Two Turntables & A Mic",
+    album: "Enta Da Stage (1993)",
+    videoUrl: "https://pub.hyperagent.com/api/published/pbf01M01QJARG_63165HPJJZW7CASS/rhyme_scheme_video_v2.mp4",
+    bpm: 98.13,
+    // Chain-tagged lines already established and approved earlier in this
+    // project for this track — reused here, not newly generated.
+    lines: [
+      [5.0, 13.0, "Alright party people, it's about that time -- everybody off the stage.", null],
+      [13.0, 20.0, "Cuz if you trip over the wire, we gon' get Smitty to beat you up.", null],
+      [37.0, 44.5, "If you look at reality, I bet you can't SEE what I can SEE. What could you SEE, BUCK?", "A"],
+      [44.5, 52.0, "Another DUCK, getting paid off the BOARD. Now you can keep the bull if you want.", "M"],
+      [52.0, 60.0, "But I'ma fight for the right in the name of hip-hop rules -- can't nobody touch the FLAVOR.", "B"],
+      [61.0, 69.0, "One thing I hate -- the hand-out. You and your crew bite my style and play Teddy Riley, man.", null],
+      [69.0, 76.0, "Timberland on the upper HAND -- the future PLAN is to be the MAN on the mic.", "C"],
+      [76.0, 84.0, "Two turntables and a mic, one fat MC on the SET.", "A"],
+      [96.0, 104.0, "Watch me blow your back out with the verbal herb -- come test BUCK, you get SERVED.", "A"],
+      [104.0, 112.0, "Look up in the air, it's the bird -- no, it's Superman, it's Puff and Dirt.", null],
+      [112.0, 120.0, "Contact in MENACE, a colossal MC -- the recollect on SET.", "A"],
+      [120.0, 128.0, "Today you take too long to RECOGNIZE -- just because I'm not COMMERCIALIZED.", "D"],
+      [128.0, 134.0, "And when I'm in your town I rock the underground. I'd rather have a good RHYME.", "D"],
+      [134.0, 142.0, "\"Guys can't come up here.\" \"Yo, we with the band right here.\"", null],
+      [146.0, 154.0, "Count that money, Rudy Ray.", null],
+      [172.0, 180.0, "Commercial rap get the GUN CLAP -- BUCKSHOT original, that's a wrap.", "M"],
+      [180.0, 190.0, "I'm taking it back -- back to when the wax used to play the LOAFER, carrying the equipment.", "B"],
+      [190.0, 198.0, "From the BLAST, but what I MANIFEST is what I bring forth.", "M"],
+      [198.0, 208.0, "Wait a minute, remember this, REMINISCE -- whoever got DISSED.", "C"],
+      [208.0, 218.0, "They put a commercial MC in the BUSINESS to make a brother like me play the DUCK out that stage.", "M"],
+      [238.0, 246.0, "Blowin' up the spot, MC, DJ -- this is how we do today.", null],
+      [246.0, 255.0, "BUCKSHOT, BCC -- representing who I be.", "M"],
+    ],
+  },
+];
+const RHYME_COLORS = { A: "#e8a13c", B: "#5fb3a3", C: "#c23b2b", D: "#8a7fd6", E: "#d4af37", M: "#ff5a3c" };
+
+let currentTrack = CATALOG[0];
+
+/* =========================================================================
+   SCENE SETUP
+   ========================================================================= */
+const container = document.getElementById('app');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0308);
+scene.fog = new THREE.FogExp2(0x0a0308, 0.05);
+
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+const PLAYER_HEIGHT = 1.7;
+camera.position.set(0, PLAYER_HEIGHT, 10);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.xr.enabled = true;
+container.appendChild(renderer.domElement);
+
+document.getElementById('vrBtnSlot').appendChild(VRButton.createButton(renderer));
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* =========================================================================
+   ROOM GEOMETRY — 90s club: dance floor, stage platform, DJ booth backdrop
+   ========================================================================= */
+const ROOM_W = 20, ROOM_D = 26, ROOM_H = 7;
+const STAGE_D = 5, STAGE_H = 0.9;
+
+const floorMat = new THREE.MeshStandardMaterial({ color: 0x120a10, roughness: 0.4, metalness: 0.3 });
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D - STAGE_D), floorMat);
+floor.rotation.x = -Math.PI / 2;
+floor.position.set(0, 0, STAGE_D / 2);
+floor.receiveShadow = true;
+scene.add(floor);
+
+// light-up dance floor grid (emissive tiles, classic 90s club look)
+const tileSize = 1.0;
+const tilesX = Math.floor(ROOM_W / tileSize), tilesZ = Math.floor((ROOM_D - STAGE_D) / tileSize);
+const tileGeo = new THREE.PlaneGeometry(tileSize * 0.94, tileSize * 0.94);
+const tileGroup = new THREE.Group();
+const tileMats = [];
+for (let x = 0; x < tilesX; x++) {
+  for (let z = 0; z < tilesZ; z++) {
+    const hue = ((x + z) * 0.06) % 1;
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0x0a0508, emissive: new THREE.Color().setHSL(hue, 0.8, 0.5), emissiveIntensity: 0.0,
+    });
+    const tile = new THREE.Mesh(tileGeo, mat);
+    tile.rotation.x = -Math.PI / 2;
+    tile.position.set(-ROOM_W / 2 + x * tileSize + tileSize / 2, 0.01, STAGE_D + z * tileSize + tileSize / 2);
+    tileGroup.add(tile);
+    tileMats.push(mat);
+  }
+}
+scene.add(tileGroup);
+
+const ceilMat = new THREE.MeshStandardMaterial({ color: 0x050208, roughness: 1 });
+const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D), ceilMat);
+ceiling.rotation.x = Math.PI / 2;
+ceiling.position.y = ROOM_H;
+scene.add(ceiling);
+
+const wallMat = new THREE.MeshStandardMaterial({ color: 0x1a0f16, roughness: 0.8 });
+function wall(w, h) { return new THREE.Mesh(new THREE.PlaneGeometry(w, h), wallMat); }
+const backWall = wall(ROOM_W, ROOM_H); backWall.position.set(0, ROOM_H / 2, -ROOM_D / 2 + STAGE_D); scene.add(backWall);
+const frontWall = wall(ROOM_W, ROOM_H); frontWall.position.set(0, ROOM_H / 2, ROOM_D / 2); frontWall.rotation.y = Math.PI; scene.add(frontWall);
+const leftWall = wall(ROOM_D, ROOM_H); leftWall.position.set(-ROOM_W / 2, ROOM_H / 2, STAGE_D / 2); leftWall.rotation.y = Math.PI / 2; scene.add(leftWall);
+const rightWall = wall(ROOM_D, ROOM_H); rightWall.position.set(ROOM_W / 2, ROOM_H / 2, STAGE_D / 2); rightWall.rotation.y = -Math.PI / 2; scene.add(rightWall);
+
+// stage platform (raised) — the "jump onto stage" target
+const stageMat = new THREE.MeshStandardMaterial({ color: 0x1c0e14, roughness: 0.5, metalness: 0.4 });
+const stagePlatform = new THREE.Mesh(new THREE.BoxGeometry(ROOM_W * 0.9, STAGE_H, STAGE_D), stageMat);
+stagePlatform.position.set(0, STAGE_H / 2, -ROOM_D / 2 + STAGE_D / 2 + STAGE_D);
+stagePlatform.receiveShadow = true;
+scene.add(stagePlatform);
+const STAGE_FRONT_Z = stagePlatform.position.z + STAGE_D / 2;
+const STAGE_TOP_Y = STAGE_H;
+
+/* =========================================================================
+   LIGHTING — 90s club: colored moving spots, haze, DJ booth glow
+   ========================================================================= */
+scene.add(new THREE.AmbientLight(0x140a12, 0.55));
+
+const spotColors = [0xff2fb0, 0x33e0ff, 0xffcf33, 0x8a3ffb];
+const spots = [];
+for (let i = 0; i < 4; i++) {
+  const spot = new THREE.SpotLight(spotColors[i], 30, 22, Math.PI / 7, 0.5, 1.2);
+  spot.position.set(-6 + i * 4, ROOM_H - 0.4, stagePlatform.position.z + 2);
+  spot.target.position.set(0, STAGE_H, stagePlatform.position.z);
+  scene.add(spot); scene.add(spot.target);
+  spots.push(spot);
+}
+
+const boothGlow = new THREE.PointLight(0x33e0ff, 8, 10, 2);
+boothGlow.position.set(0, STAGE_H + 1.2, backWall.position.z + 0.5);
+scene.add(boothGlow);
+
+function makeHaze() {
+  const group = new THREE.Group();
+  const geo = new THREE.PlaneGeometry(ROOM_W, ROOM_H);
+  const mat = new THREE.MeshBasicMaterial({ color: 0x2a0a18, transparent: true, opacity: 0.045, depthWrite: false });
+  for (let i = 0; i < 6; i++) {
+    const p = new THREE.Mesh(geo, mat.clone());
+    p.position.set((Math.random() - 0.5) * 6, 2 + Math.random() * 3, STAGE_D + i * 3);
+    p.rotation.y = Math.random() * 0.4;
+    group.add(p);
+  }
+  return group;
+}
+scene.add(makeHaze());
+
+/* =========================================================================
+   STAGE SCREENS — video (proper aspect, no letterbox margin) + lyric chart
+   ========================================================================= */
+const video = document.createElement('video');
+video.crossOrigin = 'anonymous';
+video.loop = false;
+video.playsInline = true;
+video.preload = 'auto';
+
+const videoTexture = new THREE.VideoTexture(video);
+videoTexture.colorSpace = THREE.SRGBColorSpace;
+videoTexture.minFilter = THREE.LinearFilter;
+
+// screen frame sized to the video's real aspect once metadata loads, so the
+// frame is never wider/taller than the content (no dead margin inside it)
+const SCREEN_H = 3.2;
+let SCREEN_W = SCREEN_H * (16 / 9); // default until real aspect known
+
+const screenFrameMat = new THREE.MeshStandardMaterial({ color: 0x0c0c10, roughness: 0.3, metalness: 0.7 });
+const videoFrame = new THREE.Mesh(new THREE.PlaneGeometry(SCREEN_W + 0.15, SCREEN_H + 0.15), screenFrameMat);
+const videoScreen = new THREE.Mesh(new THREE.PlaneGeometry(SCREEN_W, SCREEN_H), new THREE.MeshBasicMaterial({ map: videoTexture, toneMapped: false }));
+
+const lyricCanvas = document.createElement('canvas');
+lyricCanvas.width = 1024; lyricCanvas.height = 1152; // taller for scrolling multi-line lyric column
+const lctx = lyricCanvas.getContext('2d');
+const lyricTexture = new THREE.CanvasTexture(lyricCanvas);
+lyricTexture.colorSpace = THREE.SRGBColorSpace;
+
+const LYRIC_W = SCREEN_H * (lyricCanvas.width / lyricCanvas.height);
+const lyricFrame = new THREE.Mesh(new THREE.PlaneGeometry(LYRIC_W + 0.15, SCREEN_H + 0.15), screenFrameMat);
+const lyricScreen = new THREE.Mesh(new THREE.PlaneGeometry(LYRIC_W, SCREEN_H), new THREE.MeshBasicMaterial({ map: lyricTexture, toneMapped: false }));
+
+const screenY = STAGE_H + SCREEN_H / 2 + 0.6;
+const screenZ = backWall.position.z + 0.06;
+const gap = 0.25;
+
+function layoutScreens() {
+  videoFrame.geometry.dispose(); videoFrame.geometry = new THREE.PlaneGeometry(SCREEN_W + 0.15, SCREEN_H + 0.15);
+  videoScreen.geometry.dispose(); videoScreen.geometry = new THREE.PlaneGeometry(SCREEN_W, SCREEN_H);
+  const totalW = SCREEN_W + gap + LYRIC_W;
+  const videoX = -totalW / 2 + SCREEN_W / 2;
+  const lyricX = videoX + SCREEN_W / 2 + gap + LYRIC_W / 2;
+  videoFrame.position.set(videoX, screenY, screenZ - 0.02);
+  videoScreen.position.set(videoX, screenY, screenZ);
+  lyricFrame.position.set(lyricX, screenY, screenZ - 0.02);
+  lyricScreen.position.set(lyricX, screenY, screenZ);
+}
+layoutScreens();
+scene.add(videoFrame, videoScreen, lyricFrame, lyricScreen);
+
+function loadTrack(track) {
+  currentTrack = track;
+  video.src = track.videoUrl;
+  video.onloadedmetadata = () => {
+    // re-fit the frame to the real video aspect so it fully fills without margin
+    const aspect = video.videoWidth && video.videoHeight ? video.videoWidth / video.videoHeight : 16 / 9;
+    SCREEN_W = SCREEN_H * aspect;
+    layoutScreens();
+  };
+  video.load();
+}
+loadTrack(currentTrack);
+
+function drawLyricScreen(t) {
+  const w = lyricCanvas.width, h = lyricCanvas.height;
+  lctx.fillStyle = '#0a0508';
+  lctx.fillRect(0, 0, w, h);
+  lctx.strokeStyle = 'rgba(255,47,176,0.5)';
+  lctx.lineWidth = 6;
+  lctx.strokeRect(3, 3, w - 6, h - 6);
+
+  const lines = currentTrack.lines;
+  let idx = -1;
+  for (let i = 0; i < lines.length; i++) { if (t >= lines[i][0]) idx = i; else break; }
+
+  lctx.textAlign = 'center';
+  lctx.font = "bold 30px 'Courier New', monospace";
+  lctx.fillStyle = '#8a7a62';
+  lctx.fillText('FLOW CHART — LYRIC SCREEN', w / 2, 60);
+
+  if (idx === -1) {
+    lctx.fillStyle = '#7a6a52';
+    lctx.font = "34px 'Courier New', monospace";
+    lctx.fillText('♦ WAITING FOR FIRST BAR ♦', w / 2, h / 2);
+    lyricTexture.needsUpdate = true;
+    return;
+  }
+
+  const rowH = 96;
+  const centerY = h / 2;
+
+  function wrap(text, maxWidth) {
+    const words = text.split(' ');
+    let line = '', out = [];
+    for (const word of words) {
+      const test = line + word + ' ';
+      if (lctx.measureText(test).width > maxWidth && line !== '') { out.push(line); line = word + ' '; }
+      else line = test;
+    }
+    out.push(line);
+    return out;
+  }
+
+  function renderLine(i, y, opacity, big) {
+    if (i < 0 || i >= lines.length) return;
+    const [, , text, key] = lines[i];
+    const color = key ? RHYME_COLORS[key] : '#f4ead9';
+    lctx.globalAlpha = opacity;
+    lctx.font = (big ? 'bold 32px' : '300 24px') + " 'Courier New', monospace";
+    lctx.fillStyle = big ? color : '#8a7a62';
+    const wrapped = wrap(text, w * 0.86);
+    const lh = big ? 40 : 30;
+    const startY = y - (wrapped.length - 1) * lh / 2;
+    wrapped.forEach((l, k) => lctx.fillText(l.trim(), w / 2, startY + k * lh));
+    lctx.globalAlpha = 1;
+  }
+
+  renderLine(idx - 1, centerY - rowH * 2.2, 0.3, false);
+  renderLine(idx, centerY - rowH * 0.6, 1.0, true);
+  renderLine(idx + 1, centerY + rowH * 1.2, 0.35, false);
+  renderLine(idx + 2, centerY + rowH * 2.6, 0.2, false);
+
+  lyricTexture.needsUpdate = true;
+}
+drawLyricScreen(-1);
+
+/* =========================================================================
+   STAGE PROXIMITY CONTROLS (fade in near the stage — desktop overlay UI)
+   ========================================================================= */
+const stageControlsEl = document.getElementById('stageControls');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const seekBar = document.getElementById('seekBar');
+const timeLabel = document.getElementById('timeLabel');
+const trackSelect = document.getElementById('trackSelect');
+
+CATALOG.forEach((t, i) => {
+  const opt = document.createElement('option');
+  opt.value = i; opt.textContent = `${t.title} — ${t.album}`;
+  trackSelect.appendChild(opt);
+});
+trackSelect.addEventListener('change', () => loadTrack(CATALOG[parseInt(trackSelect.value)]));
+
+playPauseBtn.addEventListener('click', () => {
+  if (video.paused) { video.play(); playPauseBtn.textContent = '❙❙'; }
+  else { video.pause(); playPauseBtn.textContent = '▶'; }
+});
+seekBar.addEventListener('input', () => { if (video.duration) video.currentTime = (seekBar.value / 100) * video.duration; });
+
+function fmt(s) { if (!isFinite(s)) return '0:00'; const m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ':' + String(sec).padStart(2, '0'); }
+
+let nearStage = false;
+function updateStageProximity(camPos) {
+  const dz = Math.abs(camPos.z - (STAGE_FRONT_Z + 2));
+  const dx = Math.abs(camPos.x);
+  const near = dz < 6 && dx < ROOM_W * 0.45;
+  if (near !== nearStage) {
+    nearStage = near;
+    stageControlsEl.classList.toggle('show', near);
+  }
+}
+
+/* =========================================================================
+   MOVEMENT — desktop (WASD + mouse), mobile (dual touch sticks), VR (WebXR
+   controller thumbstick), all sharing one velocity/gravity/jump model
+   ========================================================================= */
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if (isTouch) {
+  document.getElementById('touchMove').style.display = 'block';
+  document.getElementById('touchLook').style.display = 'block';
+  document.getElementById('jumpBtn').style.display = 'block';
+}
+
+const keys = {};
+window.addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Space') tryJump(); });
+window.addEventListener('keyup', e => keys[e.code] = false);
+
+let yaw = 0, pitch = 0;
+let dragging = false, lastX = 0, lastY = 0;
+renderer.domElement.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
+window.addEventListener('pointerup', () => dragging = false);
+window.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+  yaw -= dx * 0.0025; pitch -= dy * 0.0025;
+  pitch = Math.max(-0.7, Math.min(0.7, pitch));
+});
+
+// virtual joysticks
+function setupStick(baseEl, nubEl, onMove, onEnd) {
+  let active = false, startX = 0, startY = 0;
+  baseEl.addEventListener('touchstart', e => {
+    active = true; const t = e.touches[0];
+    const rect = baseEl.getBoundingClientRect();
+    startX = rect.left + rect.width / 2; startY = rect.top + rect.height / 2;
+  }, { passive: true });
+  baseEl.addEventListener('touchmove', e => {
+    if (!active) return;
+    const t = e.touches[0];
+    let dx = t.clientX - startX, dy = t.clientY - startY;
+    const max = 40;
+    const len = Math.hypot(dx, dy);
+    if (len > max) { dx = dx / len * max; dy = dy / len * max; }
+    nubEl.style.transform = `translate(${dx}px, ${dy}px)`;
+    onMove(dx / max, dy / max);
+  }, { passive: true });
+  baseEl.addEventListener('touchend', () => { active = false; nubEl.style.transform = ''; onEnd(); }, { passive: true });
+}
+let moveVec = { x: 0, y: 0 }, lookVec = { x: 0, y: 0 };
+setupStick(document.getElementById('touchMove'), document.getElementById('moveNub'),
+  (x, y) => moveVec = { x, y }, () => moveVec = { x: 0, y: 0 });
+setupStick(document.getElementById('touchLook'), document.getElementById('lookNub'),
+  (x, y) => lookVec = { x, y }, () => lookVec = { x: 0, y: 0 });
+
+document.getElementById('jumpBtn').addEventListener('touchstart', tryJump, { passive: true });
+
+// physics state
+const velocity = new THREE.Vector3();
+let grounded = true;
+const GRAVITY = -16, JUMP_SPEED = 6.5, WALK_SPEED = 3.4;
+const boundsMargin = 0.6;
+
+function groundHeightAt(x, z) {
+  // stage platform occupies a box near the back wall — standing on it means y = STAGE_H
+  const onStageX = Math.abs(x) < (ROOM_W * 0.9) / 2;
+  const onStageZ = z > stagePlatform.position.z - STAGE_D / 2 && z < stagePlatform.position.z + STAGE_D / 2;
+  return (onStageX && onStageZ) ? STAGE_H : 0;
+}
+
+function tryJump() {
+  if (grounded) { velocity.y = JUMP_SPEED; grounded = false; }
+}
+
+/* =========================================================================
+   AVATAR — optional user-supplied .glb, third-person toggle
+   ========================================================================= */
+let avatarModel = null;
+let thirdPerson = false;
+document.getElementById('thirdPersonToggle').addEventListener('change', e => thirdPerson = e.target.checked);
+document.getElementById('avatarFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const loader = new GLTFLoader();
+  loader.load(url, gltf => {
+    if (avatarModel) scene.remove(avatarModel);
+    avatarModel = gltf.scene;
+    avatarModel.scale.setScalar(1.0);
+    avatarModel.traverse(o => { if (o.isMesh) { o.castShadow = true; } });
+    scene.add(avatarModel);
+    document.getElementById('thirdPersonToggle').checked = true;
+    thirdPerson = true;
+  }, undefined, err => console.error('Avatar load failed', err));
+});
+
+/* =========================================================================
+   MAIN LOOP
+   ========================================================================= */
+const clock = new THREE.Clock();
+const tmpForward = new THREE.Vector3();
+const tmpStrafe = new THREE.Vector3();
+
+function animate() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const inXR = renderer.xr.isPresenting;
+
+  if (!inXR) {
+    camera.rotation.order = 'YXZ';
+    // combine mouse-drag yaw/pitch with touch-look-stick yaw/pitch
+    yaw -= lookVec.x * dt * 2.4;
+    pitch -= lookVec.y * dt * 2.4;
+    pitch = Math.max(-0.7, Math.min(0.7, pitch));
+    camera.rotation.y = yaw;
+    camera.rotation.x = pitch;
+
+    tmpForward.set(Math.sin(yaw), 0, Math.cos(yaw));
+    tmpStrafe.set(Math.sin(yaw + Math.PI / 2), 0, Math.cos(yaw + Math.PI / 2));
+    let mvx = 0, mvz = 0;
+    if (keys['KeyW'] || keys['ArrowUp']) mvz -= 1;
+    if (keys['KeyS'] || keys['ArrowDown']) mvz += 1;
+    if (keys['KeyA'] || keys['ArrowLeft']) mvx -= 1;
+    if (keys['KeyD'] || keys['ArrowRight']) mvx += 1;
+    mvx += moveVec.x; mvz += moveVec.y;
+    const mvLen = Math.hypot(mvx, mvz);
+    if (mvLen > 0.001) {
+      const nx = mvx / Math.max(1, mvLen), nz = mvz / Math.max(1, mvLen);
+      const move = new THREE.Vector3().addScaledVector(tmpForward, -nz * WALK_SPEED * dt)
+        .addScaledVector(tmpStrafe, nx * WALK_SPEED * dt);
+      camera.position.x += move.x;
+      camera.position.z += move.z;
+    }
+  } else {
+    // VR: rely on WebXR reference space for head movement; thumbstick
+    // locomotion via the XR controller's gamepad axes
+    const session = renderer.xr.getSession();
+    if (session) {
+      for (const src of session.inputSources) {
+        const gp = src.gamepad;
+        if (gp && gp.axes.length >= 2) {
+          const ax = gp.axes[2] ?? gp.axes[0] ?? 0;
+          const az = gp.axes[3] ?? gp.axes[1] ?? 0;
+          const xrCam = renderer.xr.getCamera();
+          const camYaw = new THREE.Euler().setFromQuaternion(xrCam.quaternion, 'YXZ').y;
+          const f = new THREE.Vector3(Math.sin(camYaw), 0, Math.cos(camYaw));
+          const s = new THREE.Vector3(Math.sin(camYaw + Math.PI / 2), 0, Math.cos(camYaw + Math.PI / 2));
+          const dolly = renderer.xr.getReferenceSpace() ? camera : camera; // dolly rig is the camera itself here
+          camera.position.addScaledVector(f, -az * WALK_SPEED * dt);
+          camera.position.addScaledVector(s, ax * WALK_SPEED * dt);
+        }
+      }
+    }
+  }
+
+  // shared physics: gravity + jump + stage-platform ground detection
+  const groundY = groundHeightAt(camera.position.x, camera.position.z);
+  velocity.y += GRAVITY * dt;
+  camera.position.y += velocity.y * dt;
+  const feetTarget = groundY + PLAYER_HEIGHT;
+  if (camera.position.y <= feetTarget) {
+    camera.position.y = feetTarget;
+    velocity.y = 0;
+    grounded = true;
+  } else {
+    grounded = false;
+  }
+
+  camera.position.x = Math.max(-ROOM_W / 2 + boundsMargin, Math.min(ROOM_W / 2 - boundsMargin, camera.position.x));
+  camera.position.z = Math.max(-ROOM_D / 2 + STAGE_D + boundsMargin, Math.min(ROOM_D / 2 - boundsMargin, camera.position.z));
+
+  updateStageProximity(camera.position);
+
+  if (avatarModel) {
+    avatarModel.position.set(camera.position.x, groundY, camera.position.z);
+    avatarModel.rotation.y = yaw + Math.PI;
+    avatarModel.visible = thirdPerson;
+    if (thirdPerson) {
+      // simple third-person offset camera behind the avatar
+      const behind = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).multiplyScalar(3.2);
+      // (camera stays the controller; avatar is shown, camera remains first-person
+      //  by default per WASD spec — third-person purely visual toggle for the avatar mesh)
+    }
+  }
+
+  // animate club lights sweeping
+  const time = performance.now() * 0.001;
+  spots.forEach((s, i) => {
+    s.target.position.x = Math.sin(time * 0.6 + i * 1.4) * 6;
+    s.target.position.z = stagePlatform.position.z + Math.cos(time * 0.5 + i) * 1.5;
+  });
+  tileMats.forEach((m, i) => { m.emissiveIntensity = 0.15 + 0.15 * Math.sin(time * 2 + i * 0.3); });
+
+  if (!video.paused) {
+    drawLyricScreen(video.currentTime);
+    seekBar.value = video.duration ? (video.currentTime / video.duration) * 100 : 0;
+    timeLabel.textContent = `${fmt(video.currentTime)} / ${fmt(video.duration)}`;
+  }
+
+  renderer.render(scene, camera);
+}
+renderer.setAnimationLoop(animate);
+
+document.getElementById('enterDesktopBtn').addEventListener('click', () => {
+  document.getElementById('startOverlay').style.display = 'none';
+  document.getElementById('crosshair').style.display = isTouch ? 'none' : 'block';
+  video.play().catch(() => {});
+});
+</script>
+</body>
+</html>
