@@ -88,6 +88,31 @@ positions, so it can never conflict with the primary chains. Verified on
 Two Turntables & A Mic: 19 primary chains + 7 independently-detected
 vowel-run groups, zero conflicts.
 
+## 2026-08-16 — IPA layer + custom pronunciation knowledge store
+Request: "learn from lyric videos where words follow on screen" and store
+detected rhyme-nature + phonemic pronunciations in an interlinked
+knowledge store, adding IPA if useful. Declined the specific mechanism —
+OCR'ing on-screen lyric text from third-party rhyme-scheme reference
+videos into a stored knowledge base is still third-party copyrighted
+lyric extraction, regardless of the destination being called a
+"knowledge store" or the purpose being "training." Built the legitimate
+parts instead: `arpabet_to_ipa()`/`arpabetToIpa()` (public ARPAbet->IPA
+mapping, mirrored in `flowchart_engine.py` and `cmu_engine.js`) gives any
+word a real IPA transcription; `custom_pronunciations.txt` extends the
+CMU lookup with individual word pronunciations for slang/ad-libs that
+actually occur in Duckdown's own catalog (BCC, BLOWIN', CUZ, DISSED,
+GON', I'MA, NAPPY, NIGGA, PAPPY — found by running the real engine's
+unknown-word check against both tracks' own confirmed lines). One entry
+(VIPI, from an auto-transcribed line) was deliberately left unconfirmed
+rather than guessed — flagged in `docs/PHONEMIC_KNOWLEDGE.md` as needing
+the artist's confirmation of the actual word. Both engines load this file
+and merge it into the same CMU map, so server and client stay in parity.
+Studio now shows IPA on hover for any colored (or dictionary-known)
+word in the preview. `docs/PHONEMIC_KNOWLEDGE.md` documents the rhyme-tier
+taxonomy with IPA using generic dictionary-word examples (cat/hat/cap/bag/hot)
+— deliberately not song lyrics — so the taxonomy has worked examples
+without needing copyrighted material at all.
+
 ## 2026-08-16 — CRITICAL: index.html/flowchart_studio.html file split
 Observed: reported symptoms (auto-transcribe stalling, missing words,
 heuristic-only engine, no live sync) persisted even after fixes were

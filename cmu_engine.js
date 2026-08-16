@@ -22,6 +22,50 @@ export const PALETTE = ["#e8a13c", "#5fb3a3", "#e0524a", "#8a7fd6", "#4aa3e0",
 
 const VOWELS = new Set(["AA","AE","AH","AO","AW","AY","EH","ER","EY","IH","IY","OW","OY","UH","UW"]);
 
+/* ============================================================================
+   IPA (International Phonetic Alphabet) support
+   ARPAbet -> IPA is a standard, public linguistic mapping (used by CMU dict
+   docs, Wiktionary, etc.) — not derived from any lyric content. Lets the
+   engine show a real phonemic transcription for any word (dictionary or
+   custom-pronunciation), independent of rhyme detection.
+   ============================================================================ */
+const ARPABET_TO_IPA = {
+  AA: "ɑ", AE: "æ", AH: "ʌ", AO: "ɔ", AW: "aʊ", AY: "aɪ",
+  B: "b", CH: "tʃ", D: "d", DH: "ð", EH: "ɛ", ER: "ɝ", EY: "eɪ",
+  F: "f", G: "ɡ", HH: "h", IH: "ɪ", IY: "i", JH: "dʒ", K: "k",
+  L: "l", M: "m", N: "n", NG: "ŋ", OW: "oʊ", OY: "ɔɪ", P: "p",
+  R: "ɹ", S: "s", SH: "ʃ", T: "t", TH: "θ", UH: "ʊ", UW: "u",
+  V: "v", W: "w", Y: "j", Z: "z", ZH: "ʒ",
+};
+const SCHWA_REDUCIBLE = new Set(["AH", "IH"]); // unstressed(0) reduces toward a schwa-ish vowel in casual speech
+
+/**
+ * Converts a raw ARPAbet phone list (with stress digits, e.g. from CMU dict
+ * or a custom pronunciation entry) into an IPA transcription string, with
+ * primary/secondary stress marks (ˈ/ˌ) placed before the stressed vowel.
+ * A display/documentation utility — independent of the rhyme-tier logic.
+ */
+export function arpabetToIpa(phones) {
+  let out = '';
+  for (const p of phones) {
+    const stressMatch = p.match(/(\d)$/);
+    const stress = stressMatch ? stressMatch[1] : null;
+    const base = p.replace(/\d$/, '');
+    if (stress === '1') out += 'ˈ';
+    else if (stress === '2') out += 'ˌ';
+    let ipa = ARPABET_TO_IPA[base] || base.toLowerCase();
+    if (stress === '0' && SCHWA_REDUCIBLE.has(base)) ipa = 'ə';
+    out += ipa;
+  }
+  return out;
+}
+
+/** Convenience: look up a word (CMU or custom dict) and return its IPA string, or null if unknown. */
+export function wordToIpa(word) {
+  const phones = CMU && CMU.get(word.toUpperCase());
+  return phones ? arpabetToIpa(phones) : null;
+}
+
 const TIER_RANK = { perfect: 3, slant: 2, assonance: 1, consonance: 1 };
 
 const STOPWORDS = new Set([
@@ -32,20 +76,46 @@ const STOPWORDS = new Set([
 
 let CMU = null; // Map<string, string[]> word -> phones (with stress digits)
 
+function parseDictText(text, into) {
+  const lines = text.split('\n');
+  for (const line of lines) {
+    if (!line) continue;
+    const sp = line.indexOf(' ');
+    if (sp === -1) continue;
+    into.set(line.slice(0, sp), line.slice(sp + 1).split(' '));
+  }
+}
+
 export async function loadCmuDict(url = 'cmudict.txt') {
   if (CMU) return CMU;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to load CMU dictionary from ${url}: ${res.status}`);
   const text = await res.text();
   CMU = new Map();
-  const lines = text.split('\n');
-  for (const line of lines) {
-    if (!line) continue;
-    const sp = line.indexOf(' ');
-    if (sp === -1) continue;
-    CMU.set(line.slice(0, sp), line.slice(sp + 1).split(' '));
-  }
+  parseDictText(text, CMU);
   return CMU;
+}
+
+/**
+ * Loads custom_pronunciations.txt (same "WORD PH ON ES" format as
+ * cmudict.txt) and merges it into the live CMU map, OVERRIDING any CMU
+ * entry for the same word. This is the pronunciation half of the
+ * knowledge-store idea: individual word pronunciations — not lyric text —
+ * for slang/ad-libs/proper nouns that don't exist in the standard
+ * dictionary, sourced from Duckdown's own catalog. See
+ * docs/PHONEMIC_KNOWLEDGE.md for what's in here and why, including which
+ * entries are confirmed vs. best-guess. Call after loadCmuDict().
+ */
+export async function loadCustomPronunciations(url = 'custom_pronunciations.txt') {
+  if (!CMU) throw new Error('Call loadCmuDict() before loadCustomPronunciations().');
+  let res;
+  try { res = await fetch(url); } catch { return false; }
+  if (!res.ok) return false;
+  const text = await res.text();
+  const entries = new Map();
+  parseDictText(text, entries);
+  entries.forEach((phones, word) => CMU.set(word, phones));
+  return entries.size;
 }
 
 export function isCmuDictLoaded() { return CMU !== null; }

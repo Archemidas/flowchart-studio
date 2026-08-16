@@ -341,13 +341,21 @@ async function ensureCmuEngine() {
   if (cmuEngineFailed) throw new Error('CMU dictionary failed to load earlier');
   cmuEngineMod = await import('./cmu_engine.js');
   await cmuEngineMod.loadCmuDict('./cmudict.txt');
+  // Custom pronunciations (slang/ad-libs from Duckdown's own catalog — see
+  // docs/PHONEMIC_KNOWLEDGE.md) merge into the same lookup the dictionary
+  // uses, so a word like "I'ma" resolves instead of breaking chain
+  // continuity. Optional: a 404 here just means none are defined yet.
+  let customCount = 0;
+  try { customCount = await cmuEngineMod.loadCustomPronunciations('./custom_pronunciations.txt'); } catch {}
   cmuEngineReady = true;
+  cmuEngineMod._customCount = customCount || 0;
   return cmuEngineMod;
 }
 
 const fidelityNote = document.getElementById('fidelityNote');
 ensureCmuEngine().then(mod => {
-  fidelityNote.innerHTML = `Running the real CMU Pronouncing Dictionary phonemic engine (${mod.cmuDictSize().toLocaleString()} words loaded) — the same detection pipeline (tiers, complete-linkage clustering, BPM-adaptive window) as the server-side engine, verified word-for-word against it. Words not in the dictionary (proper nouns, slang, ad-libs) are skipped, same as server-side.`;
+  const customNote = mod._customCount ? ` + ${mod._customCount} custom pronunciation(s) from Duckdown's own catalog` : '';
+  fidelityNote.innerHTML = `Running the real CMU Pronouncing Dictionary phonemic engine (${mod.cmuDictSize().toLocaleString()} words loaded${customNote}) — the same detection pipeline (tiers, complete-linkage clustering, BPM-adaptive window) as the server-side engine, verified word-for-word against it. Words not in the dictionary (proper nouns, slang, ad-libs) are skipped, same as server-side. Hover any colored word in the preview to see its IPA transcription.`;
 }).catch(err => {
   cmuEngineFailed = true;
   fidelityNote.innerHTML = `Could not load the CMU dictionary (${err.message}) — falling back to the spelling-based heuristic engine for this session. Reload the page on a working connection to get the real phonemic engine.`;
@@ -828,15 +836,25 @@ document.getElementById('computeBtn').addEventListener('click', async () => {
   }
 });
 
+function ipaTooltip(word, base) {
+  if (!cmuEngineReady) return base;
+  try {
+    const ipa = cmuEngineMod.wordToIpa(word.replace(/[^A-Za-z']/g, ''));
+    return ipa ? `${base} · /${ipa}/` : base;
+  } catch { return base; }
+}
+
 function renderPreview(result) {
   let html = '';
   result.lines.forEach(line => {
     html += `<div class="preview-line"><span class="t">${line.start.toFixed(1)}s</span>`;
     line.words.forEach(w => {
       if (w.chain !== null) {
-        html += `<span class="w" style="background:${w.color}22;color:${w.color};border-bottom:2px solid ${w.color}" title="chain ${w.chain} · ${w.strength} · unit=${w.unitSize}">${escapeHtml(w.word)}</span> `;
+        const title = ipaTooltip(w.word, `chain ${w.chain} · ${w.strength} · unit=${w.unitSize}`);
+        html += `<span class="w" style="background:${w.color}22;color:${w.color};border-bottom:2px solid ${w.color}" title="${escapeHtml(title)}">${escapeHtml(w.word)}</span> `;
       } else {
-        html += escapeHtml(w.word) + ' ';
+        const title = ipaTooltip(w.word, '');
+        html += title ? `<span title="${escapeHtml(title)}">${escapeHtml(w.word)}</span> ` : escapeHtml(w.word) + ' ';
       }
     });
     html += `</div>`;
