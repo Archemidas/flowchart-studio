@@ -366,13 +366,9 @@ async function getAsrPipeline() {
   if (asrPipeline) return asrPipeline;
   setStatus('Loading speech-recognition model (first run only, cached after)...');
   const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0');
-  // This page runs inside a sandboxed iframe (no 'allow-same-origin'), which
-  // disables the Cache Storage API. transformers.js defaults to using it to
-  // cache downloaded model weights across page loads. Turn that off so it
-  // falls back to plain fetch instead of throwing — models will re-download
-  // each session rather than persisting, which is an acceptable tradeoff for
-  // a sandboxed artifact.
-  env.useBrowserCache = false;
+  // Hosted on a real origin (GitHub Pages), so the default Cache Storage
+  // behavior works normally here — no sandbox workaround needed. Models
+  // will cache in the browser across sessions.
   env.allowLocalModels = false;
   asrPipeline = await pipeline(
     'automatic-speech-recognition',
