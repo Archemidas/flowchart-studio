@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flow Chart Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d10; --panel:#12151a; --panel2:#161a20; --line:#232830; --ink:#e8ecf1; --dim:#8b95a3;
+    --accent:#e8a13c; --ok:#5fb3a3; --warn:#e0524a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .wrap{max-width:1200px;margin:0 auto;padding:3vw 5% 8vw;}
+  header{border-bottom:1px solid var(--line);padding-bottom:1.4rem;margin-bottom:2rem;}
+  header .kicker{font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem;}
+  header h1{font-size:clamp(1.6rem,3.6vw,2.4rem);margin:0 0 0.4rem;font-weight:700;}
+  header p{color:var(--dim);font-size:0.88rem;max-width:680px;line-height:1.6;margin:0;}
+  header .fidelity-note{margin-top:0.9rem;font-size:0.75rem;color:var(--dim);border-left:2px solid var(--accent);padding-left:0.7rem;}
+
+  section{margin-bottom:2.6rem;}
+  section h2{font-size:0.95rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.9rem;display:flex;align-items:center;gap:0.6rem;}
+  section h2 .num{font-family:'JetBrains Mono',monospace;color:var(--accent);}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.4rem;}
+
+  /* Step 1: video */
+  .video-row{display:flex;gap:1.4rem;flex-wrap:wrap;align-items:flex-start;}
+  .video-box{flex:1;min-width:280px;}
+  video{width:100%;border-radius:8px;background:#000;max-height:320px;}
+  .file-btn{display:inline-flex;align-items:center;gap:0.5rem;background:#1c2028;border:1px solid var(--line);color:var(--ink);padding:0.6rem 1rem;border-radius:6px;cursor:pointer;font-size:0.85rem;}
+  .file-btn:hover{border-color:var(--accent);}
+  .meta-box{flex:0 0 220px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--dim);}
+  .meta-box .val{color:var(--ink);font-weight:600;}
+  .bpm-row{display:flex;gap:0.6rem;align-items:center;margin-top:0.8rem;}
+  .bpm-row input{width:80px;background:#0e1116;border:1px solid var(--line);color:var(--ink);padding:0.4rem 0.6rem;border-radius:5px;font-family:'JetBrains Mono',monospace;}
+  .tap-btn{background:var(--accent);color:#1a1108;border:none;padding:0.5rem 0.9rem;border-radius:5px;font-weight:700;cursor:pointer;font-size:0.78rem;}
+
+  /* Step 2: lines editor */
+  .line-row{display:grid;grid-template-columns:70px 70px 1fr 90px;gap:0.6rem;margin-bottom:0.5rem;align-items:center;}
+  .line-row input[type=text]{width:100%;background:#0e1116;border:1px solid var(--line);color:var(--ink);padding:0.55rem 0.7rem;border-radius:5px;font-size:0.88rem;}
+  .line-row .stamp{font-family:'JetBrains Mono',monospace;font-size:0.72rem;background:#1c2028;border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:0.5rem 0.3rem;cursor:pointer;text-align:center;}
+  .line-row .stamp:hover{border-color:var(--accent);}
+  .line-row .del{background:transparent;border:1px solid var(--line);color:var(--warn);border-radius:5px;cursor:pointer;font-size:0.75rem;padding:0.4rem;}
+  .add-line{margin-top:0.8rem;background:#1c2028;border:1px dashed var(--line);color:var(--dim);padding:0.6rem 1rem;border-radius:6px;cursor:pointer;font-size:0.82rem;width:100%;}
+  .add-line:hover{border-color:var(--accent);color:var(--ink);}
+
+  .toolbar{display:flex;gap:0.8rem;margin-top:1.2rem;flex-wrap:wrap;}
+  .btn{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:0.8rem;letter-spacing:0.03em;padding:0.7rem 1.3rem;border-radius:6px;cursor:pointer;border:none;}
+  .btn.primary{background:var(--accent);color:#1a1108;}
+  .btn.secondary{background:#1c2028;color:var(--ink);border:1px solid var(--line);}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+  /* Step 3: preview */
+  .preview-line{font-family:'JetBrains Mono',monospace;font-size:1rem;line-height:2.1;padding:0.3rem 0;border-bottom:1px solid #1a1e24;}
+  .preview-line .t{color:var(--dim);font-size:0.68rem;margin-right:0.6rem;}
+  .preview-line .w{padding:0.05rem 0.28rem;border-radius:3px;}
+  .stats{display:flex;gap:1.6rem;margin-top:1rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--dim);}
+  .stats b{color:var(--ink);}
+
+  .empty{color:var(--dim);font-size:0.85rem;font-style:italic;padding:1rem 0;}
+  footer{border-top:1px solid var(--line);padding-top:1.4rem;color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:0.7rem;line-height:1.8;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">Duckdown Records · Flow Chart Studio · Client-side</div>
+    <h1>Flow Chart Studio</h1>
+    <p>Upload your video, type your own lyrics against the timeline, and compute a rhyme-scheme chart right here in your browser. Nothing leaves this page — everything runs locally in JavaScript. Export the finished bundle and hand it back for the 3D room build.</p>
+    <div class="fidelity-note">This runs a spelling-based approximation (syllable/vowel-cluster heuristic), not the full CMU-dictionary phonemic engine used server-side. Good for a fast, accurate-enough live preview; the exported bundle can also be re-run through the full engine later for higher fidelity.</div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span> Video &amp; Tempo</h2>
+    <div class="panel video-row">
+      <div class="video-box">
+        <video id="videoPlayer" controls></video>
+        <div style="margin-top:0.8rem;">
+          <label class="file-btn">
+            Choose Video File
+            <input type="file" id="videoFile" accept="video/*" style="display:none;">
+          </label>
+        </div>
+      </div>
+      <div class="meta-box">
+        <div>Filename: <span class="val" id="metaName">—</span></div>
+        <div>Duration: <span class="val" id="metaDuration">—</span></div>
+        <div class="bpm-row">
+          BPM: <input type="number" id="bpmInput" value="90" min="40" max="220">
+          <button class="tap-btn" id="tapBtn">Tap Tempo</button>
+        </div>
+        <div style="margin-top:0.4rem;">Bars lookahead: <input type="number" id="barsInput" value="8" min="1" max="32" style="width:50px;background:#0e1116;border:1px solid var(--line);color:var(--ink);padding:0.3rem;border-radius:4px;font-family:'JetBrains Mono',monospace;"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> Lyrics &amp; Timing</h2>
+    <div class="panel">
+      <div id="lineRows"></div>
+      <button class="add-line" id="addLineBtn">+ Add line</button>
+      <div class="toolbar">
+        <button class="btn secondary" id="autoTranscribeBtn">Auto-Transcribe from Video</button>
+        <button class="btn primary" id="computeBtn">Compute Flow Chart</button>
+        <button class="btn secondary" id="exportBtn" disabled>Export Bundle (.json)</button>
+        <button class="btn secondary" id="clearBtn">Clear All</button>
+      </div>
+      <div id="transcribeStatus" class="mono" style="margin-top:0.7rem;font-size:0.75rem;color:var(--dim);display:none;"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> Preview</h2>
+    <div class="panel" id="previewPanel">
+      <div class="empty">Compute a Flow Chart to see the colored preview here.</div>
+    </div>
+  </section>
+
+  <footer>
+    FLOW CHART STUDIO — DUCKDOWN RECORDS INTERNAL TOOL · v0.1 (client-side heuristic)<br>
+    Export produces a JSON bundle: {bpm, barsLookahead, lines:[{start,end,text,words:[{word,chain,color,strength,unitSize,crossWord}]}], chains:[...]}. Video is referenced by filename only — bring the actual video file along separately when handing the bundle off.
+  </footer>
+
+</div>
+
+<script>
+/* ============== PHONETIC HEURISTIC (spelling-based, client-side) ============== */
+const VOWEL_RE = /[aeiouy]+/gi;
+
+function normalizeSpelling(word) {
+  let w = word.toLowerCase().replace(/[^a-z]/g, '');
+  // common digraph/silent-letter simplifications
+  w = w.replace(/tion$/, 'shun').replace(/sion$/, 'shun')
+       .replace(/ough/g, 'uf').replace(/augh/g, 'af')
+       .replace(/ph/g, 'f').replace(/gh/g, '')
+       .replace(/ck/g, 'k').replace(/qu/g, 'kw')
+       .replace(/([a-z])\1/g, '$1') // collapse doubled letters
+       .replace(/e$/, ''); // drop silent trailing e
+  return w;
+}
+
+function syllableSplit(word) {
+  // approximate syllables as vowel-cluster runs; each "syllable" = the
+  // vowel cluster plus trailing consonants up to the next vowel cluster
+  const w = normalizeSpelling(word);
+  if (!w) return [];
+  const clusters = [];
+  let i = 0;
+  const isVowel = c => 'aeiouy'.includes(c);
+  while (i < w.length) {
+    if (isVowel(w[i])) {
+      let start = i;
+      while (i < w.length && isVowel(w[i])) i++;
+      let vEnd = i;
+      while (i < w.length && !isVowel(w[i])) i++;
+      clusters.push(w.slice(start, i));
+      if (i >= w.length) break;
+    } else {
+      i++;
+    }
+  }
+  return clusters.length ? clusters : [w];
+}
+
+function tailFor(syllables, k) {
+  const n = syllables.length;
+  if (n === 0) return null;
+  const take = Math.min(k, n);
+  return syllables.slice(n - take).join('');
+}
+
+function vowelsOnly(s) { return (s.match(VOWEL_RE) || []).join(''); }
+
+function editDistance1(a, b) {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  if (a === b) return false;
+  const len = Math.max(a.length, b.length);
+  let diffs = 0;
+  for (let i = 0; i < len; i++) { if (a[i] !== b[i]) diffs++; }
+  return diffs <= 1;
+}
+
+const TIER_RANK = { perfect: 3, slant: 2, assonance: 1, consonance: 1 };
+
+function compareTails(a, b) {
+  if (!a || !b) return null;
+  if (a === b) return 'perfect';
+  if (Math.abs(a.length - b.length) <= 1 && editDistance1(a, b)) return 'slant';
+  const va = vowelsOnly(a), vb = vowelsOnly(b);
+  if (va && va === vb) return 'assonance';
+  if (a.slice(-1) === b.slice(-1) && a.slice(-1)) return 'consonance';
+  return null;
+}
+
+const STOPWORDS = new Set(['a','an','and','the','to','of','in','on','is','it','i','you','we','that','this','for','with','at','but','or','so','if','as','be','my','your','his','her','its','our','their']);
+
+const PALETTE = ["#e8a13c","#5fb3a3","#e0524a","#8a7fd6","#4aa3e0","#d4af37","#6fbf73","#e07bb0","#c98a4b","#7a9fd6"];
+
+function barsToSeconds(bars, bpm, beatsPerBar) {
+  return bars * beatsPerBar * (60 / bpm);
+}
+
+/* ============== ENGINE (ports the same shape as the Python skill) ============== */
+function buildFlowChart(lines, bpm, barsLookahead, minTier) {
+  const lookaheadSeconds = barsToSeconds(barsLookahead, bpm, 4);
+  const tierRankMin = TIER_RANK[minTier];
+
+  // flatten words with interpolated timestamps + syllable data
+  const words = [];
+  lines.forEach((line, li) => {
+    const toks = line.text.split(/\s+/).filter(Boolean);
+    const span = Math.max(0.001, line.end - line.start);
+    const step = span / Math.max(1, toks.length);
+    toks.forEach((w, wi) => {
+      const clean = w.replace(/[^A-Za-z']/g, '');
+      const isStop = STOPWORDS.has(clean.toLowerCase());
+      const syl = isStop ? [] : syllableSplit(clean);
+      words.push({ lineIdx: li, text: w, syl, t: line.start + wi * step });
+    });
+  });
+
+  const MAX_K = 3;
+  const candidatesByK = { 1: [], 2: [], 3: [] };
+  words.forEach((wd, wi) => {
+    if (wd.syl.length === 0) return;
+    for (let k = 1; k <= MAX_K; k++) {
+      if (k > wd.syl.length && k > 1) continue;
+      const tail = tailFor(wd.syl, k);
+      candidatesByK[k].push({ wordIdx: wi, tail, t: wd.t });
+    }
+  });
+
+  function clusterCandidates(cands) {
+    const clusters = [];
+    cands.forEach(cand => {
+      let joined = false;
+      for (const cluster of clusters) {
+        const last = cluster.members[cluster.members.length - 1];
+        if (cand.t - last.t > lookaheadSeconds) continue;
+        let ok = true, bestTier = 'consonance';
+        for (const m of cluster.members) {
+          const tier = compareTails(cand.tail, m.tail);
+          if (!tier || TIER_RANK[tier] < tierRankMin) { ok = false; break; }
+          if (TIER_RANK[tier] > TIER_RANK[bestTier]) bestTier = tier;
+        }
+        if (ok) { cluster.members.push(cand); cluster.strength = bestTier; joined = true; break; }
+      }
+      if (!joined) clusters.push({ members: [cand], strength: 'perfect' });
+    });
+    return clusters.filter(c => c.members.length >= 2);
+  }
+
+  const claimed = new Set();
+  const allChains = [];
+  for (let k = MAX_K; k >= 1; k--) {
+    const avail = candidatesByK[k].filter(c => !claimed.has(c.wordIdx));
+    if (avail.length < 2) continue;
+    const clusters = clusterCandidates(avail);
+    clusters.forEach(cl => {
+      cl.members.forEach(m => claimed.add(m.wordIdx));
+      allChains.push({ k, strength: cl.strength, members: cl.members });
+    });
+  }
+
+  allChains.sort((a, b) => Math.min(...a.members.map(m => m.wordIdx)) - Math.min(...b.members.map(m => m.wordIdx)));
+  allChains.forEach((c, idx) => { c.chainId = idx; c.color = PALETTE[idx % PALETTE.length]; });
+
+  const wordTag = {};
+  allChains.forEach(c => {
+    c.members.forEach(m => {
+      wordTag[m.wordIdx] = { chainId: c.chainId, color: c.color, strength: c.strength, unitSize: c.k };
+    });
+  });
+
+  const outLines = lines.map((line, li) => {
+    const lineWords = words.filter(w => w.lineIdx === li);
+    const startIdx = words.findIndex(w => w.lineIdx === li);
+    const taggedWords = lineWords.map((wd, i) => {
+      const tag = wordTag[startIdx + i];
+      return tag
+        ? { word: wd.text, chain: tag.chainId, color: tag.color, strength: tag.strength, unitSize: tag.unitSize }
+        : { word: wd.text, chain: null };
+    });
+    const density = taggedWords.length ? taggedWords.filter(w => w.chain !== null).length / taggedWords.length : 0;
+    return { start: line.start, end: line.end, text: line.text, words: taggedWords, density: Math.round(density * 100) / 100 };
+  });
+
+  const chainDirectory = allChains.map(c => ({ chainId: c.chainId, color: c.color, strength: c.strength, unitSize: c.k, size: c.members.length }));
+
+  return { lines: outLines, chains: chainDirectory };
+}
+
+/* ============== UI WIRING ============== */
+const videoEl = document.getElementById('videoPlayer');
+const videoFileInput = document.getElementById('videoFile');
+const metaName = document.getElementById('metaName');
+const metaDuration = document.getElementById('metaDuration');
+const bpmInput = document.getElementById('bpmInput');
+const barsInput = document.getElementById('barsInput');
+const lineRowsEl = document.getElementById('lineRows');
+const previewPanel = document.getElementById('previewPanel');
+const exportBtn = document.getElementById('exportBtn');
+
+let videoFilename = null;
+let computedResult = null;
+
+videoFileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  videoFilename = file.name;
+  metaName.textContent = file.name;
+  const url = URL.createObjectURL(file);
+  videoEl.src = url;
+  videoEl.onloadedmetadata = () => {
+    metaDuration.textContent = formatTime(videoEl.duration);
+  };
+});
+
+function formatTime(s) {
+  if (!isFinite(s)) return '0:00';
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return m + ':' + String(sec).padStart(2, '0');
+}
+
+function addLineRow(start = '', end = '', text = '') {
+  const row = document.createElement('div');
+  row.className = 'line-row';
+  row.innerHTML = `
+    <div class="stamp" title="Set start to current video time">Start<br><span class="startVal">${start}</span></div>
+    <div class="stamp" title="Set end to current video time">End<br><span class="endVal">${end}</span></div>
+    <input type="text" class="lineText" placeholder="Type this line's lyrics..." value="${text.replace(/"/g,'&quot;')}">
+    <button class="del">Remove</button>
+  `;
+  row.querySelector('.stamp:nth-child(1)').addEventListener('click', () => {
+    row.querySelector('.startVal').textContent = videoEl.currentTime.toFixed(2);
+  });
+  row.querySelector('.stamp:nth-child(2)').addEventListener('click', () => {
+    row.querySelector('.endVal').textContent = videoEl.currentTime.toFixed(2);
+  });
+  row.querySelector('.del').addEventListener('click', () => row.remove());
+  lineRowsEl.appendChild(row);
+}
+
+document.getElementById('addLineBtn').addEventListener('click', () => addLineRow());
+addLineRow(); // start with one empty row
+
+/* ============== AUTO-TRANSCRIBE (in-browser Whisper via transformers.js) ==============
+   Model: onnx-community/whisper-base_timestamped — an ONNX build of Whisper
+   specifically packaged for transformers.js, chosen via Hugging Face search
+   for word-level-timestamp ASR that runs client-side with no server round
+   trip. Runs entirely in this tab; the audio never leaves the browser. */
+let asrPipeline = null;
+const transcribeStatus = document.getElementById('transcribeStatus');
+
+function setStatus(msg) {
+  transcribeStatus.style.display = 'block';
+  transcribeStatus.textContent = msg;
+}
+
+async function getAsrPipeline() {
+  if (asrPipeline) return asrPipeline;
+  setStatus('Loading speech-recognition model (first run only, cached after)...');
+  const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0');
+  // This page runs inside a sandboxed iframe (no 'allow-same-origin'), which
+  // disables the Cache Storage API. transformers.js defaults to using it to
+  // cache downloaded model weights across page loads. Turn that off so it
+  // falls back to plain fetch instead of throwing — models will re-download
+  // each session rather than persisting, which is an acceptable tradeoff for
+  // a sandboxed artifact.
+  env.useBrowserCache = false;
+  env.allowLocalModels = false;
+  asrPipeline = await pipeline(
+    'automatic-speech-recognition',
+    'onnx-community/whisper-base_timestamped',
+    {
+      progress_callback: (p) => {
+        if (p.status === 'progress' && p.file) {
+          setStatus(`Downloading model: ${p.file} — ${Math.round(p.progress || 0)}%`);
+        }
+      },
+    }
+  );
+  return asrPipeline;
+}
+
+async function decodeVideoToMono16k(file) {
+  setStatus('Decoding audio track from video...');
+  const arrayBuffer = await file.arrayBuffer();
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  const tempCtx = new AudioCtx();
+  const decoded = await tempCtx.decodeAudioData(arrayBuffer.slice(0));
+  tempCtx.close();
+
+  const targetRate = 16000;
+  const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * targetRate), targetRate);
+  const src = offline.createBufferSource();
+
+  // downmix to mono if needed before resampling
+  let monoBuffer = decoded;
+  if (decoded.numberOfChannels > 1) {
+    const tmp = new AudioContext();
+    monoBuffer = tmp.createBuffer(1, decoded.length, decoded.sampleRate);
+    const mixed = monoBuffer.getChannelData(0);
+    for (let ch = 0; ch < decoded.numberOfChannels; ch++) {
+      const chData = decoded.getChannelData(ch);
+      for (let i = 0; i < chData.length; i++) mixed[i] = (mixed[i] || 0) + chData[i] / decoded.numberOfChannels;
+    }
+    tmp.close();
+  }
+  src.buffer = monoBuffer;
+  src.connect(offline.destination);
+  src.start(0);
+  const rendered = await offline.startRendering();
+  return rendered.getChannelData(0);
+}
+
+function groupWordsIntoLines(chunks, pauseThresholdSec = 0.6) {
+  const lines = [];
+  let current = [];
+  for (let i = 0; i < chunks.length; i++) {
+    const c = chunks[i];
+    if (current.length === 0) { current.push(c); continue; }
+    const prevEnd = current[current.length - 1].timestamp[1];
+    const gap = c.timestamp[0] - prevEnd;
+    if (gap > pauseThresholdSec) {
+      lines.push(current);
+      current = [c];
+    } else {
+      current.push(c);
+    }
+  }
+  if (current.length) lines.push(current);
+  return lines.map(group => ({
+    start: group[0].timestamp[0],
+    end: group[group.length - 1].timestamp[1],
+    text: group.map(c => c.text.trim()).join(' ').replace(/\s+/g, ' ').trim(),
+  }));
+}
+
+document.getElementById('autoTranscribeBtn').addEventListener('click', async () => {
+  const file = videoFileInput.files[0];
+  if (!file) { setStatus('Choose a video file first.'); return; }
+  const btn = document.getElementById('autoTranscribeBtn');
+  btn.disabled = true;
+  try {
+    const audioData = await decodeVideoToMono16k(file);
+    const asr = await getAsrPipeline();
+    setStatus('Transcribing (this can take a minute on longer tracks)...');
+    const output = await asr(audioData, {
+      return_timestamps: 'word',
+      chunk_length_s: 30,
+      stride_length_s: 5,
+    });
+    const chunks = output.chunks || [];
+    if (chunks.length === 0) {
+      setStatus('No speech detected, or the model returned no word-level chunks.');
+      return;
+    }
+    const lines = groupWordsIntoLines(chunks);
+    lineRowsEl.innerHTML = '';
+    lines.forEach(l => addLineRow(l.start.toFixed(2), l.end.toFixed(2), l.text));
+    setStatus(`Done — ${lines.length} lines auto-populated from the audio. Review and edit the text below before computing (ASR transcription can misheard words, especially slang/ad-libs).`);
+  } catch (err) {
+    console.error(err);
+    setStatus('Auto-transcribe failed: ' + err.message + ' — you can still enter lines manually below.');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  lineRowsEl.innerHTML = '';
+  addLineRow();
+  previewPanel.innerHTML = '<div class="empty">Compute a Flow Chart to see the colored preview here.</div>';
+  exportBtn.disabled = true;
+  computedResult = null;
+});
+
+// Tap tempo
+let tapTimes = [];
+document.getElementById('tapBtn').addEventListener('click', () => {
+  const now = performance.now();
+  tapTimes.push(now);
+  if (tapTimes.length > 6) tapTimes.shift();
+  if (tapTimes.length >= 3) {
+    const intervals = [];
+    for (let i = 1; i < tapTimes.length; i++) intervals.push(tapTimes[i] - tapTimes[i-1]);
+    const avgMs = intervals.reduce((a,b) => a+b, 0) / intervals.length;
+    const bpm = Math.round(60000 / avgMs);
+    if (bpm > 30 && bpm < 300) bpmInput.value = bpm;
+  }
+});
+
+document.getElementById('computeBtn').addEventListener('click', () => {
+  const rows = Array.from(lineRowsEl.querySelectorAll('.line-row'));
+  const lines = rows.map(r => ({
+    start: parseFloat(r.querySelector('.startVal').textContent) || 0,
+    end: parseFloat(r.querySelector('.endVal').textContent) || 0,
+    text: r.querySelector('.lineText').value.trim(),
+  })).filter(l => l.text.length > 0 && l.end > l.start);
+
+  if (lines.length === 0) {
+    previewPanel.innerHTML = '<div class="empty">Add at least one line with a start/end time and text, then compute.</div>';
+    return;
+  }
+
+  const bpm = parseFloat(bpmInput.value) || 90;
+  const bars = parseInt(barsInput.value) || 8;
+  computedResult = buildFlowChart(lines, bpm, bars, 'perfect');
+  computedResult.bpm = bpm;
+  computedResult.barsLookahead = bars;
+  computedResult.videoFilename = videoFilename;
+  renderPreview(computedResult);
+  exportBtn.disabled = false;
+});
+
+function renderPreview(result) {
+  let html = '';
+  result.lines.forEach(line => {
+    html += `<div class="preview-line"><span class="t">${line.start.toFixed(1)}s</span>`;
+    line.words.forEach(w => {
+      if (w.chain !== null) {
+        html += `<span class="w" style="background:${w.color}22;color:${w.color};border-bottom:2px solid ${w.color}" title="chain ${w.chain} · ${w.strength} · unit=${w.unitSize}">${escapeHtml(w.word)}</span> `;
+      } else {
+        html += escapeHtml(w.word) + ' ';
+      }
+    });
+    html += `</div>`;
+  });
+  const totalChains = result.chains.length;
+  const avgDensity = result.lines.reduce((a,l) => a + l.density, 0) / result.lines.length;
+  html += `<div class="stats">
+    <div>Chains: <b>${totalChains}</b></div>
+    <div>Lines: <b>${result.lines.length}</b></div>
+    <div>Avg density: <b>${avgDensity.toFixed(2)}</b></div>
+    <div>BPM: <b>${result.bpm}</b></div>
+  </div>`;
+  previewPanel.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+exportBtn.addEventListener('click', () => {
+  if (!computedResult) return;
+  const blob = new Blob([JSON.stringify(computedResult, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'flowchart_bundle.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>
