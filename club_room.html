@@ -10,66 +10,81 @@
   canvas{display:block;}
 
   #startOverlay{
-    position:fixed;inset:0;z-index:200;background:radial-gradient(ellipse at center,#2a0a15 0%,#050005 80%);
+    position:fixed;inset:0;z-index:200;background:radial-gradient(ellipse at center,#3a0f05 0%,#000 78%);
     display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;
+    padding:5vh 4vw;box-sizing:border-box;
   }
-  #startOverlay h1{font-size:clamp(1.8rem,5vw,3.2rem);color:#ff2fb0;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.6rem;text-shadow:0 0 20px #ff2fb0;}
-  #startOverlay p{max-width:520px;font-size:0.85rem;color:#c9a8bd;line-height:1.7;margin-bottom:1.6rem;padding:0 6%;}
+  #startOverlay img.brandLogo{width:min(130px,28vw);height:auto;margin-bottom:0.8rem;filter:drop-shadow(0 0 18px rgba(255,222,0,0.35));}
+  #startOverlay h1{font-size:clamp(1.6rem,5vw,3rem);color:#ffde00;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.6rem;text-shadow:0 0 22px rgba(232,69,44,0.85),0 2px 0 #000;}
+  #startOverlay p{max-width:520px;font-size:0.85rem;color:#e6cdb8;line-height:1.7;margin-bottom:1.6rem;padding:0 6%;}
   #startOverlay button{
-    font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:#ffcf33;color:#1a0a00;
+    font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:#ffde00;color:#140800;
     border:none;padding:0.95rem 2.2rem;font-size:0.82rem;cursor:pointer;border-radius:2px;margin:0.3rem;
   }
   #startOverlay .rowbtns{display:flex;flex-wrap:wrap;justify-content:center;}
-  #vrNotice{font-size:0.7rem;color:#8a7;margin-top:0.6rem;}
+  #vrNotice{font-size:0.7rem;color:#e8452c;margin-top:0.6rem;}
 
   #hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;padding:14px 18px;pointer-events:none;}
-  #hud .brand{color:#ff2fb0;font-size:1rem;letter-spacing:0.04em;text-shadow:0 2px 8px #000;}
-  #hud .brand small{display:block;font-size:0.6rem;color:#c9a8bd;letter-spacing:0.15em;}
-  #hint{color:#c9a8bd;font-size:0.62rem;text-align:right;line-height:1.6;text-shadow:0 2px 6px #000;}
+  #hud .brand{color:#ffde00;font-size:1rem;letter-spacing:0.04em;text-shadow:0 2px 8px #000;display:flex;align-items:center;gap:0.5rem;}
+  #hud .brand img{width:26px;height:26px;border-radius:50%;}
+  #hud .brand .brandText small{display:block;font-size:0.6rem;color:#e6cdb8;letter-spacing:0.15em;font-weight:400;}
+  #hint{color:#e6cdb8;font-size:0.62rem;text-align:right;line-height:1.6;text-shadow:0 2px 6px #000;}
 
-  #crosshair{position:fixed;top:50%;left:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:rgba(255,207,51,0.7);z-index:15;display:none;pointer-events:none;}
+  #crosshair{position:fixed;top:50%;left:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:rgba(255,222,0,0.7);z-index:15;display:none;pointer-events:none;}
 
   /* Mobile touch controls */
-  #touchMove, #touchLook{position:fixed;bottom:0;z-index:30;width:38vw;height:38vw;max-width:170px;max-height:170px;display:none;touch-action:none;}
+  #touchMove, #touchLook{position:fixed;bottom:16px;z-index:30;width:32vw;height:32vw;max-width:140px;max-height:140px;display:none;touch-action:none;}
   #touchMove{left:16px;}
   #touchLook{right:16px;}
   .stick-base{position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);}
-  .stick-nub{position:absolute;width:42%;height:42%;top:29%;left:29%;border-radius:50%;background:rgba(255,207,51,0.55);}
-  #jumpBtn{position:fixed;bottom:24px;right:calc(16px + 38vw + 16px);z-index:31;display:none;
-    width:64px;height:64px;border-radius:50%;background:rgba(255,47,176,0.5);border:1px solid #ff2fb0;
-    color:#fff;font-size:0.68rem;font-weight:700;text-transform:uppercase;}
+  .stick-nub{position:absolute;width:42%;height:42%;top:29%;left:29%;border-radius:50%;background:rgba(255,222,0,0.55);}
+  #jumpBtn{position:fixed;bottom:168px;right:16px;z-index:31;display:none;
+    width:56px;height:56px;border-radius:50%;background:rgba(232,69,44,0.55);border:1px solid #ffde00;
+    color:#fff;font-size:0.62rem;font-weight:700;text-transform:uppercase;}
 
   #vrBtnSlot{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:25;}
 
-  /* Video controls that fade in near the stage */
+  /* Video controls that fade in near the stage — sized to never overflow small screens */
   #stageControls{
-    position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);z-index:40;
-    background:rgba(10,5,8,0.82);border:1px solid #ff2fb0;border-radius:8px;padding:0.6rem 0.9rem;
-    display:flex;align-items:center;gap:0.7rem;opacity:0;transition:opacity .35s ease, transform .35s ease;pointer-events:none;
+    position:fixed;left:50%;bottom:16px;transform:translateX(-50%) translateY(20px);z-index:40;
+    background:rgba(10,5,4,0.88);border:1px solid #ffde00;border-radius:8px;padding:0.5rem 0.7rem;
+    display:flex;align-items:center;gap:0.5rem;opacity:0;transition:opacity .35s ease, transform .35s ease;pointer-events:none;
+    max-width:92vw;flex-wrap:wrap;justify-content:center;box-sizing:border-box;
   }
   #stageControls.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
-  #stageControls button{background:#ffcf33;color:#1a0a00;border:none;border-radius:4px;padding:0.4rem 0.7rem;font-weight:700;cursor:pointer;font-size:0.72rem;}
-  #stageControls input[type=range]{width:120px;}
-  #stageControls .label{color:#c9a8bd;font-size:0.65rem;white-space:nowrap;}
+  #stageControls button{background:#ffde00;color:#140800;border:none;border-radius:4px;padding:0.4rem 0.6rem;font-weight:700;cursor:pointer;font-size:0.7rem;flex:0 0 auto;}
+  #stageControls input[type=range]{width:110px;max-width:32vw;flex:1 1 auto;min-width:60px;}
+  #stageControls .label{color:#e6cdb8;font-size:0.62rem;white-space:nowrap;}
+  #stageControls select{max-width:34vw;font-size:0.62rem;}
+  @media (max-width: 480px){
+    #stageControls{gap:0.35rem;padding:0.45rem 0.55rem;bottom:8px;}
+    #stageControls .label{display:none;}
+    #stageControls select{max-width:30vw;}
+    #stageControls input[type=range]{width:80px;max-width:26vw;}
+    #touchMove,#touchLook{width:28vw;height:28vw;max-width:110px;max-height:110px;}
+    #jumpBtn{width:48px;height:48px;bottom:140px;font-size:0.55rem;}
+    #hint{display:none;}
+  }
 
-  #avatarLoader{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:25;font-size:0.62rem;color:#c9a8bd;}
-  #avatarLoader input{font-size:0.6rem;}
+  #avatarLoader{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:25;font-size:0.58rem;color:#e6cdb8;max-width:90vw;text-align:center;}
+  #avatarLoader input{font-size:0.58rem;max-width:38vw;}
 </style>
 </head>
 <body>
 
 <div id="startOverlay">
+  <img class="brandLogo" src="https://upload.wikimedia.org/wikipedia/en/6/6e/DuckDownMusicLogo2011.jpg" alt="Duck Down Music Inc.">
   <h1>The Club — 90s Stage</h1>
-  <p>Walk into a 90s hip-hop club built around Duckdown catalog tracks. Approach the stage to reveal video + lyric-chart controls. WASD + mouse on desktop, touch sticks on mobile, full VR support on Quest/OVR headsets via WebXR.</p>
+  <p>Walk into a 90s hip-hop club built around the Duckdown catalog. Approach the stage to reveal video + lyric-chart controls. WASD + mouse on desktop, touch sticks on mobile, full VR support on Quest/OVR headsets via WebXR.</p>
   <div class="rowbtns">
     <button id="enterDesktopBtn">Enter (Desktop / Mobile)</button>
   </div>
-  <div id="vrNotice">VR headset detected — a "Enter VR" button will appear bottom-center once you're in.</div>
+  <div id="vrNotice">VR headset detected — an "Enter VR" button will appear bottom-center once you're in.</div>
 </div>
 
 <div id="crosshair"></div>
 <div id="hud">
-  <div class="brand">DUCKDOWN RECORDS<small>The Club — Flow Chart Live Room</small></div>
+  <div class="brand"><img src="https://upload.wikimedia.org/wikipedia/en/6/6e/DuckDownMusicLogo2011.jpg" alt=""><span class="brandText">DUCKDOWN RECORDS<small>The Club — Flow Chart Live Room</small></span></div>
   <div id="hint">WASD / Touch stick — walk<br>Mouse / drag — look<br>Space / Jump button — jump<br>Approach stage for controls</div>
 </div>
 
@@ -106,6 +121,7 @@
 import * as THREE from "three";
 import { VRButton } from "three/addons/webxr/VRButton.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { CSS3DRenderer, CSS3DObject } from "three/addons/renderers/CSS3DRenderer.js";
 
 /* =========================================================================
    CATALOG — populated from tracks actually supplied by Duckdown through the
@@ -233,19 +249,41 @@ let currentTrack = CATALOG[0];
    ========================================================================= */
 const container = document.getElementById('app');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0308);
+// No opaque scene.background: the video screen is a DOM <video> element
+// rendered by a CSS3DRenderer *behind* the WebGL canvas. The WebGL canvas
+// clears to fully transparent, so wherever nothing else is drawn (the
+// video "hole" on the stage wall) the CSS3D video shows through. This
+// sidesteps the fact that the published video host doesn't send CORS
+// headers, which would otherwise make any WebGL VideoTexture unusable
+// (tainted-canvas SecurityError on texImage2D) and silently kill playback.
 scene.fog = new THREE.FogExp2(0x0a0308, 0.05);
 
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
 const PLAYER_HEIGHT = 1.7;
 camera.position.set(0, PLAYER_HEIGHT, 10);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x0a0308, 0);
 renderer.shadowMap.enabled = true;
 renderer.xr.enabled = true;
+renderer.domElement.style.position = 'absolute';
+renderer.domElement.style.top = '0';
+renderer.domElement.style.zIndex = '2';
 container.appendChild(renderer.domElement);
+
+// CSS3D layer sits behind the (transparent-cleared) WebGL canvas and
+// carries the actual <video> element — plain DOM video playback, no
+// cross-origin texture upload involved at all.
+const cssScene = new THREE.Scene();
+const cssRenderer = new CSS3DRenderer();
+cssRenderer.setSize(window.innerWidth, window.innerHeight);
+cssRenderer.domElement.style.position = 'absolute';
+cssRenderer.domElement.style.top = '0';
+cssRenderer.domElement.style.zIndex = '1';
+cssRenderer.domElement.style.pointerEvents = 'none';
+container.appendChild(cssRenderer.domElement);
 
 document.getElementById('vrBtnSlot').appendChild(VRButton.createButton(renderer));
 
@@ -253,6 +291,7 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  cssRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 /* =========================================================================
@@ -348,14 +387,20 @@ scene.add(makeHaze());
    STAGE SCREENS — video (proper aspect, no letterbox margin) + lyric chart
    ========================================================================= */
 const video = document.createElement('video');
-video.crossOrigin = 'anonymous';
+// Deliberately no crossOrigin attribute: the published video host does not
+// send Access-Control-Allow-Origin, so requesting it in CORS mode would
+// fail the fetch entirely and the video would never play. Plain (no-CORS)
+// playback works fine here since we display it via CSS3D, not a WebGL
+// texture, so no pixel readback/upload is needed.
 video.loop = false;
 video.playsInline = true;
+video.muted = false;
 video.preload = 'auto';
-
-const videoTexture = new THREE.VideoTexture(video);
-videoTexture.colorSpace = THREE.SRGBColorSpace;
-videoTexture.minFilter = THREE.LinearFilter;
+// baseline DOM pixel size for the CSS3DObject; rescaled to real aspect once
+// metadata loads (see loadTrack -> onloadedmetadata below)
+video.style.width = '1280px';
+video.style.height = '720px';
+video.style.pointerEvents = 'none';
 
 // screen frame sized to the video's real aspect once metadata loads, so the
 // frame is never wider/taller than the content (no dead margin inside it)
@@ -364,7 +409,7 @@ let SCREEN_W = SCREEN_H * (16 / 9); // default until real aspect known
 
 const screenFrameMat = new THREE.MeshStandardMaterial({ color: 0x0c0c10, roughness: 0.3, metalness: 0.7 });
 const videoFrame = new THREE.Mesh(new THREE.PlaneGeometry(SCREEN_W + 0.15, SCREEN_H + 0.15), screenFrameMat);
-const videoScreen = new THREE.Mesh(new THREE.PlaneGeometry(SCREEN_W, SCREEN_H), new THREE.MeshBasicMaterial({ map: videoTexture, toneMapped: false }));
+const videoObject = new CSS3DObject(video); // the actual playable surface, rendered via CSS3D
 
 const lyricCanvas = document.createElement('canvas');
 lyricCanvas.width = 1024; lyricCanvas.height = 1152; // taller for scrolling multi-line lyric column
@@ -382,17 +427,26 @@ const gap = 0.25;
 
 function layoutScreens() {
   videoFrame.geometry.dispose(); videoFrame.geometry = new THREE.PlaneGeometry(SCREEN_W + 0.15, SCREEN_H + 0.15);
-  videoScreen.geometry.dispose(); videoScreen.geometry = new THREE.PlaneGeometry(SCREEN_W, SCREEN_H);
   const totalW = SCREEN_W + gap + LYRIC_W;
   const videoX = -totalW / 2 + SCREEN_W / 2;
   const lyricX = videoX + SCREEN_W / 2 + gap + LYRIC_W / 2;
   videoFrame.position.set(videoX, screenY, screenZ - 0.02);
-  videoScreen.position.set(videoX, screenY, screenZ);
   lyricFrame.position.set(lyricX, screenY, screenZ - 0.02);
   lyricScreen.position.set(lyricX, screenY, screenZ);
+
+  // CSS3DObject size is driven by the DOM element's CSS pixel size, so we
+  // scale it to convert those pixels into the same Three.js units as
+  // SCREEN_W/SCREEN_H, then position/rotate it exactly where the old WebGL
+  // video plane sat.
+  const domW = parseFloat(video.style.width);
+  const domH = parseFloat(video.style.height);
+  videoObject.scale.set(SCREEN_W / domW, SCREEN_H / domH, 1);
+  videoObject.position.set(videoX, screenY, screenZ);
+  videoObject.rotation.set(0, 0, 0);
 }
 layoutScreens();
-scene.add(videoFrame, videoScreen, lyricFrame, lyricScreen);
+scene.add(videoFrame, lyricFrame, lyricScreen);
+cssScene.add(videoObject);
 
 function loadTrack(track) {
   currentTrack = track;
@@ -401,6 +455,8 @@ function loadTrack(track) {
     // re-fit the frame to the real video aspect so it fully fills without margin
     const aspect = video.videoWidth && video.videoHeight ? video.videoWidth / video.videoHeight : 16 / 9;
     SCREEN_W = SCREEN_H * aspect;
+    video.style.width = '1280px';
+    video.style.height = String(Math.round(1280 / aspect)) + 'px';
     layoutScreens();
   };
   video.load();
@@ -702,6 +758,16 @@ function animate() {
   }
 
   renderer.render(scene, camera);
+
+  // CSS3DRenderer doesn't support WebXR stereo presentation, so the DOM
+  // video layer is hidden and skipped while in a VR session (a documented
+  // limitation — see docs/ROOM.md).
+  if (inXR) {
+    cssRenderer.domElement.style.display = 'none';
+  } else {
+    cssRenderer.domElement.style.display = 'block';
+    cssRenderer.render(cssScene, camera);
+  }
 }
 renderer.setAnimationLoop(animate);
 
