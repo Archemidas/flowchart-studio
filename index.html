@@ -415,7 +415,29 @@ async function decodeVideoToMono16k(file) {
   return rendered.getChannelData(0);
 }
 
-function groupWordsIntoLines(chunks, pauseThresholdSec = 0.6) {
+function sanitizeChunks(chunks) {
+  // transformers.js Whisper word-timestamps occasionally return null for a
+  // chunk's start or end (most often the very last word in a clip, when the
+  // model doesn't cleanly detect where the audio ends). Patch nulls using
+  // neighboring chunks so downstream code never has to handle null itself.
+  const out = chunks.map(c => ({ text: c.text, timestamp: [c.timestamp[0], c.timestamp[1]] }));
+  for (let i = 0; i < out.length; i++) {
+    const t = out[i].timestamp;
+    if (t[0] == null) {
+      t[0] = i > 0 ? out[i - 1].timestamp[1] : 0;
+    }
+    if (t[1] == null) {
+      const nextStart = i + 1 < out.length ? out[i + 1].timestamp[0] : null;
+      t[1] = nextStart != null ? nextStart : t[0] + 0.4; // fallback: assume a short word
+    }
+    if (t[0] == null) t[0] = 0;
+    if (t[1] == null || t[1] < t[0]) t[1] = t[0] + 0.4;
+  }
+  return out;
+}
+
+function groupWordsIntoLines(rawChunks, pauseThresholdSec = 0.6) {
+  const chunks = sanitizeChunks(rawChunks);
   const lines = [];
   let current = [];
   for (let i = 0; i < chunks.length; i++) {
@@ -459,7 +481,7 @@ document.getElementById('autoTranscribeBtn').addEventListener('click', async () 
     }
     const lines = groupWordsIntoLines(chunks);
     lineRowsEl.innerHTML = '';
-    lines.forEach(l => addLineRow(l.start.toFixed(2), l.end.toFixed(2), l.text));
+    lines.forEach(l => addLineRow((l.start ?? 0).toFixed(2), (l.end ?? (l.start ?? 0) + 1).toFixed(2), l.text));
     setStatus(`Done — ${lines.length} lines auto-populated from the audio. Review and edit the text below before computing (ASR transcription can misheard words, especially slang/ad-libs).`);
   } catch (err) {
     console.error(err);
