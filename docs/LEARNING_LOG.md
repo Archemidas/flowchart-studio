@@ -88,6 +88,45 @@ positions, so it can never conflict with the primary chains. Verified on
 Two Turntables & A Mic: 19 primary chains + 7 independently-detected
 vowel-run groups, zero conflicts.
 
+## 2026-08-17 — Arc-diagram architecture (rhymekit) integrated
+Reviewed a 3-part Duckdown-authored spec ("A General Theory of
+Rhyme-Scheme Indication Architecture") describing a substantially
+different rendering approach — pseudoknot/chord arc diagrams (RNA-
+secondary-structure style) instead of colored scrolling lyrics — with
+ortho-divergence/heterograph detection, multi-voice (main/adlib/sample)
+tracking, latency/resolve semantics for delayed rhymes, and a continuous
+complexity fingerprint Φ with named regimes (R0/R1/R2). Part 3
+(`rhymekit.py`) was a complete, runnable reference implementation.
+Full writeup in `docs/ARC_DIAGRAM_ARCHITECTURE.md`. Notable this pass:
+- `rhymekit.py` had 5 real bugs preventing it from running at all
+  (invalid line-wrapped dataclass field, a misplaced constructor kwarg,
+  an unhashable-dataclass bug, an operator-precedence bug, and a
+  structurally broken arc-height-stacking block that indexed a site dict
+  with a group id). All fixed and documented; none silently patched
+  without explanation.
+- Built `arc_bridge.py`, converting `flowchart_engine.py`'s real output
+  into rhymekit's schema so the renderer runs on actual catalog data, not
+  just the spec's own illustrative example. Verified on both tracks: Two
+  Turntables & A Mic (21 groups, 29 arcs, Φ d=0.6/X=11/N=3) and Who Got Da
+  Props (63 groups, 197 arcs, Φ d=1.01/X=138/N=4) — meaningfully different
+  fingerprints, confirming Φ works as a real complexity differentiator.
+- Found and fixed a second real bug during the bridge work: the example's
+  hardcoded `GROUP_FAMILY` color table put two semantically different
+  groups on the same hue (tripping the renderer's own uniqueness check),
+  and separately, real full-song data has far more rhyme groups (21-63)
+  than there are vowel families (~12) to assign hues from — a genuine
+  design-scaling gap in the spec's small hand-picked example, not
+  something visible until run against a whole track. Fixed with
+  deterministic hue-family variants plus a dedup pass.
+- Noted, not silently resolved: the spec's prose claims a self-demo
+  behavior (villainous/ill_in_us staying separate under ORTHO tier) that
+  the code's own default threshold contradicts (they merge at the
+  code's shipped 0.4 threshold; their actual normalized edit distance is
+  0.3). Left as a stated discrepancy for whoever owns the spec to decide.
+- Honest scope limit: this is server-side Python today, not wired into
+  the browser Studio. A JS port of the renderer for an in-browser export
+  button is real, scoped future work, not attempted here.
+
 ## 2026-08-16 — Relational (191-200) and Expressive Formation (211-220) operators integrated
 Reviewed two more Duckdown-authored spec docs extending the 201-210
 framework: "(Flow Chart / 191-200)" (Relational Precomposition: Alignment,
