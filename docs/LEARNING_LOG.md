@@ -88,6 +88,40 @@ positions, so it can never conflict with the primary chains. Verified on
 Two Turntables & A Mic: 19 primary chains + 7 independently-detected
 vowel-run groups, zero conflicts.
 
+## 2026-08-16 — Relational (191-200) and Expressive Formation (211-220) operators integrated
+Reviewed two more Duckdown-authored spec docs extending the 201-210
+framework: "(Flow Chart / 191-200)" (Relational Precomposition: Alignment,
+Orientation, Coupling, Binding, Anchoring, Referencing, Echoing,
+Contrasting, Gradating, Phasing) and "(Flow Chart - 211-220)" (Expressive
+Formation: Formation, Morphing, Compounding, Phrase-Binding,
+Phonetic-Bridging, Syllabic-Bending, Rhyme-Chaining, Metrical-Warping,
+Cross-Bar-Weaving, Semantic-Phonetic Fusion). Both are pure theory with
+generic illustrative examples, no song content. Full mapping in the new
+`docs/RELATIONAL_OPERATORS.md`. Findings worth noting:
+- Several operations turned out to ALREADY be implemented under different
+  names, which is a good validation signal: Anchoring = Rhyme Anchor,
+  Referencing = Callback/Bookend, Echoing = Echo Callout/Vowel Runs,
+  Phrase-Binding = Cross-Word Chain, Compounding = Compound Split/
+  polyphony, Morphing/Syllabic-Bending = the custom pronunciation
+  dictionary mechanism (GON'/I'MA/BLOWIN' are exactly A→A' identity-
+  preserving morphs), Cross-Bar-Weaving = the `cross_bar` flag added last
+  pass.
+- Genuinely new and built this pass: `chain_metrics()` (chain_length,
+  mean_similarity, phonetic_drift, stress_continuity, temporal_span) per
+  the Rhyme-Chaining operation's call for a chain to have a measurable
+  trajectory, not just membership. Verified additive (same 8-chain
+  regression result before/after). Also made rhyme_graph's edge direction
+  explicit (`directed: true`) per the Orientation/Alignment distinction —
+  it was already temporally directed by construction, just unlabeled.
+- Honestly deferred, not built: Contrasting and Semantic-Phonetic Fusion
+  (need a semantic/meaning layer this engine doesn't have — phonemic/
+  metrical only), Coupling/Metrical-Warping/Phasing (all need
+  tempo_meter.py's real beat grid wired into flowchart_engine.py, which
+  currently only crosses that boundary as a scalar bpm — a real, scoped
+  future integration), Phonetic-Bridging (needs cross-word
+  resyllabification detection), Gradating (a small chain-trend metric,
+  skipped this pass to keep the change set focused).
+
 ## 2026-08-16 — Compositional framework (201-210) integrated
 Reviewed a Duckdown-authored spec doc (Google Doc "(Flow Chart - Rhyme)")
 describing a 10-operation pipeline (Decomposition through Fusion) and a

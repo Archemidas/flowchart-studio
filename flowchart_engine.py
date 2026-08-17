@@ -509,18 +509,69 @@ def rhyme_strength_score(tier, member_ts, lookahead_seconds):
     return round(min(1.0, score), 3)
 
 
+TIER_SIMILARITY = {"perfect": 1.0, "slant": 0.75, "assonance": 0.55, "consonance": 0.4}
+
+
+def phonetic_drift(first_tail, last_tail):
+    """How much a chain's phonetic tail has drifted from its first member to
+    its last — the 217 RHYME-CHAINING ontology's 'continuity through
+    variation' idea: a chain isn't just a bag of matches, it has a
+    trajectory. 0 = identical tail throughout (no drift), 1 = completely
+    different (only still linked via intermediate members). Simple
+    proportion-of-differing-phones metric, not a full edit-distance."""
+    if not first_tail or not last_tail:
+        return 0.0
+    length = max(len(first_tail), len(last_tail))
+    shared = sum(1 for a, b in zip(first_tail, last_tail) if a == b)
+    return round(1.0 - (shared / length), 3)
+
+
+def chain_metrics(candidates):
+    """Per-chain metrics called for by the 217 RHYME-CHAINING operation:
+    chain_length, mean_similarity, phonetic_drift, temporal_span. (Stress
+    continuity is omitted as a separate metric because every primary-chain
+    candidate is, by construction, built from a primary-stressed anchor —
+    see gather_candidates — so it is trivially 1.0 for every chain in this
+    engine's current design; recorded here as a constant with that
+    explanation rather than silently implying it was measured.)
+    """
+    ordered = sorted(candidates, key=lambda c: c["t"])
+    n = len(ordered)
+    pairwise = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            tier = compare_tails(ordered[i]["tail"], ordered[j]["tail"])
+            pairwise.append(TIER_SIMILARITY.get(tier, 0.0))
+    mean_similarity = round(sum(pairwise) / len(pairwise), 3) if pairwise else 1.0
+    return {
+        "chain_length": n,
+        "mean_similarity": mean_similarity,
+        "phonetic_drift": phonetic_drift(ordered[0]["tail"], ordered[-1]["tail"]) if n > 1 else 0.0,
+        "stress_continuity": 1.0,  # see docstring — constant by construction, not measured
+        "temporal_span": round(ordered[-1]["t"] - ordered[0]["t"], 3) if n > 1 else 0.0,
+    }
+
+
 def build_rhyme_graph(all_chains, secondary_chains, vowel_runs):
     """Renders the chain-based detection output as an explicit node/edge
-    graph — 'rhyme_scheme = graph, not string' from the framework. Additive:
-    doesn't replace the chain-based output annotate_lines() already
-    returns, just re-expresses it in graph form for callers that want it
-    (e.g. a future rhyme-relation visualization distinct from the
-    line-by-line colored view).
+    graph — 'rhyme_scheme = graph, not string' from the compositional
+    framework (see docs/RHYME_GRAPH_FRAMEWORK.md). Additive: doesn't
+    replace the chain-based output annotate_lines() already returns, just
+    re-expresses it in graph form for callers that want it.
 
     Nodes are word indices actually involved in some rhyme relation.
     Edges connect consecutive members within a chain (primary or
     secondary/polyphonic) or a vowel run, typed accordingly, carrying the
     tier and continuous strength score.
+
+    Orientation (relational-operator framework, see
+    docs/RELATIONAL_OPERATORS.md): every edge already runs from the
+    EARLIER chain member to the LATER one (source/target are assigned from
+    time-sorted pairs, not sorted arbitrarily) — the graph is directed by
+    construction, not just a set of undirected co-membership links. This
+    is stated explicitly via graph-level `directed: true` rather than left
+    implicit, since 'this correspondence has a direction' is exactly the
+    distinction that framework draws between Alignment and Orientation.
     """
     nodes = set()
     edges = []
@@ -559,7 +610,7 @@ def build_rhyme_graph(all_chains, secondary_chains, vowel_runs):
                 "type": "vowel_run", "run_id": run_idx,
             })
 
-    return {"nodes": sorted(nodes), "edges": edges}
+    return {"nodes": sorted(nodes), "edges": edges, "directed": True}
 
 
 def build_chains(lines, bpm=None, bars_lookahead=8, lookahead_seconds=None,
@@ -728,6 +779,7 @@ def annotate_lines(lines, bpm=None, bars_lookahead=8, lookahead_seconds=None,
             "cross_bar": bpm is not None and len(set(
                 b for b in (word_bar_index(t, bpm) for t in ts) if b is not None)) > 1,
             "strength_score": rhyme_strength_score(c["strength"], ts, max(span, 1)),
+            "metrics": chain_metrics(c["candidates"]),
         })
     secondary_directory = [
         {"chain_id": sc["chain_id"], "strength": sc["strength"], "size": len(sc["candidates"])}

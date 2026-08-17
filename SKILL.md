@@ -11,12 +11,14 @@ A rhyme-scheme detection and visualization system built for Duckdown Records,
 covering: phonemic rhyme detection (`flowchart_engine.py`), a formal
 compositional framework mapping (`docs/RHYME_GRAPH_FRAMEWORK.md` — rhyme
 graph output, continuous strength scores, cross-bar detection, stress
-patterns), tempo/meter analysis (`tempo_meter.py`), cross-language
-mora-timing generalization (`language_profiles.py`), an IPA transcription
-layer + custom pronunciation knowledge store (`docs/PHONEMIC_KNOWLEDGE.md`,
-`custom_pronunciations.txt`), a browser-based manual/auto-transcription
-tool (Flow Chart Studio, running the real CMU engine client-side via
-`cmu_engine.js`, with an exportable/importable Style Profile), and a
+patterns — and `docs/RELATIONAL_OPERATORS.md` — chain trajectory metrics,
+directed rhyme relations), tempo/meter analysis (`tempo_meter.py`),
+cross-language mora-timing generalization (`language_profiles.py`), an IPA
+transcription layer + custom pronunciation knowledge store
+(`docs/PHONEMIC_KNOWLEDGE.md`, `custom_pronunciations.txt`), a
+browser-based manual/auto-transcription tool (Flow Chart Studio, running
+the real CMU engine client-side via `cmu_engine.js`, with an
+exportable/importable Style Profile), and a
 Three.js 3D club room that plays a track back with a synced, per-word
 lyric-chart display.
 
