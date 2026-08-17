@@ -108,34 +108,16 @@
         <label style="display:inline-flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--dim);margin-right:0.6rem;">
           <input type="checkbox" id="isolateVocalsToggle" checked> Center-channel vocal boost
         </label>
-        <button class="btn secondary" id="autoTranscribeBtn">Auto-Transcribe (audio)</button>
-        <button class="btn secondary" id="ocrTranscribeBtn">Auto-Transcribe (on-screen text)</button>
+        <button class="btn secondary" id="autoTranscribeBtn">Auto-Transcribe from Video</button>
         <button class="btn primary" id="computeBtn">Compute Flow Chart</button>
         <button class="btn secondary" id="exportBtn" disabled>Export Bundle (.json)</button>
         <button class="btn secondary" id="clearBtn">Clear All</button>
-      </div>
-      <div class="bpm-row" style="margin-top:0.6rem;">
-        <span style="font-size:0.72rem;color:var(--dim);">On-screen text region:</span>
-        <select id="ocrRegion" style="background:#0e1116;border:1px solid var(--line);color:var(--ink);padding:0.4rem;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:0.75rem;">
-          <option value="full">Full frame</option>
-          <option value="bottom-third" selected>Bottom third</option>
-          <option value="top-third">Top third</option>
-        </select>
-        <span style="font-size:0.72rem;color:var(--dim);">Sample every</span>
-        <input type="number" id="ocrInterval" value="1.0" min="0.3" max="5" step="0.1" style="width:60px;background:#0e1116;border:1px solid var(--line);color:var(--ink);padding:0.4rem;border-radius:5px;font-family:'JetBrains Mono',monospace;">
-        <span style="font-size:0.72rem;color:var(--dim);">sec</span>
       </div>
       <div style="margin-top:0.5rem;font-size:0.7rem;color:var(--dim);line-height:1.6;">
         Honest limitation: this is center-channel (mid = (L+R)/2) extraction, not a trained source-separation model.
         It suppresses hard-panned instruments but does <em>not</em> cleanly separate vocals from drums/bass that are
         also mixed center — common in hip-hop. If a track sounds worse with this on, turn it off. Transcription no
         longer depends on it for coverage (see the two-pass pipeline below); it's a minor assist, not the fix.
-      </div>
-      <div style="margin-top:0.4rem;font-size:0.7rem;color:var(--dim);line-height:1.6;">
-        Both transcription methods read whatever is in the file you loaded above — same rule either way: only load
-        video you have the rights to use (your own official lyric video, a confirmed take, etc.). Neither method is
-        aware of who owns what's in the frame or the waveform; that judgment call is yours, same as manually typing
-        lines has always been.
       </div>
       <div id="transcribeStatus" class="mono" style="margin-top:0.7rem;font-size:0.75rem;color:var(--dim);display:none;"></div>
     </div>
@@ -153,7 +135,7 @@
   </section>
 
   <footer>
-    FLOW CHART STUDIO — DUCKDOWN RECORDS INTERNAL TOOL · v0.3 (real CMU phonemic engine + on-screen text OCR, client-side)<br>
+    FLOW CHART STUDIO — DUCKDOWN RECORDS INTERNAL TOOL · v0.2 (real CMU phonemic engine, client-side)<br>
     Export produces a JSON bundle: {bpm, barsLookahead, lines:[{start,end,text,words:[{word,chain,color,strength,unitSize,crossWord}]}], chains:[...]}. Video is referenced by filename only — bring the actual video file along separately when handing the bundle off.
   </footer>
 
@@ -706,150 +688,6 @@ async function transcribeRange(asr, audioData, sr, start, end) {
     ],
   }));
 }
-
-/* ============== ON-SCREEN TEXT TRANSCRIPTION (OCR, Tesseract.js) ==============
-   A second, independent transcription input — parallel to the audio/Whisper
-   path above, not a replacement. Reads whatever on-screen text is burned
-   into the loaded video (captions/lyric overlays) and turns it into
-   timestamped lines feeding the SAME editor as audio transcription, so a
-   line can be typed, heard, or read off-screen — three input methods into
-   one place. Uses Tesseract.js: real, open-source, documented OCR (clear
-   recognize() API, known confidence/bbox output), not a black-box model —
-   the same verifiability standard applied to every other model choice in
-   this build.
-
-   Sourcing note: this reads whatever text is in the frame, exactly like
-   the audio path reads whatever is in the waveform. It carries no judgment
-   about who owns the content on screen — that's the same call the user
-   already makes every time they load a video here at all. */
-let tesseractWorker = null;
-
-async function loadTesseract() {
-  if (window.Tesseract) return window.Tesseract;
-  await new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-    s.onload = resolve;
-    s.onerror = () => reject(new Error('Failed to load Tesseract.js from CDN'));
-    document.head.appendChild(s);
-  });
-  return window.Tesseract;
-}
-
-function normalizeOcrText(s) {
-  return s.replace(/\s+/g, ' ').trim();
-}
-
-// Treats near-identical consecutive frames (the same on-screen line held for
-// multiple sampled frames) as one line, tolerating small OCR noise between
-// frames rather than requiring an exact match.
-function ocrTextsSimilar(a, b) {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  const shorter = a.length < b.length ? a : b;
-  const longer = a.length < b.length ? b : a;
-  if (longer.length === 0) return true;
-  if (shorter.length / longer.length < 0.6) return false;
-  // cheap overlap check: what fraction of the shorter string's words appear in the longer one
-  const shortWords = shorter.toLowerCase().split(' ');
-  const longWords = new Set(longer.toLowerCase().split(' '));
-  const hits = shortWords.filter(w => longWords.has(w)).length;
-  return hits / shortWords.length > 0.7;
-}
-
-async function ocrTranscribeFromVideo(file, { region = 'bottom-third', intervalSec = 1.0, maxFrames = 240 } = {}) {
-  const Tesseract = await loadTesseract();
-  const video = document.createElement('video');
-  video.src = URL.createObjectURL(file);
-  video.muted = true;
-  await new Promise((resolve, reject) => {
-    video.onloadedmetadata = resolve;
-    video.onerror = () => reject(new Error('Could not read video metadata for OCR'));
-  });
-
-  const duration = video.duration;
-  const step = Math.max(intervalSec, duration / maxFrames);
-  const totalSteps = Math.ceil(duration / step);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-
-  let sy = 0, sh = canvas.height;
-  if (region === 'bottom-third') { sy = Math.floor(canvas.height * 2 / 3); sh = canvas.height - sy; }
-  else if (region === 'top-third') { sh = Math.floor(canvas.height / 3); }
-
-  const cropCanvas = document.createElement('canvas');
-  cropCanvas.width = canvas.width;
-  cropCanvas.height = sh;
-  const cropCtx = cropCanvas.getContext('2d');
-
-  if (!tesseractWorker) {
-    setStatus('Loading OCR engine (Tesseract.js, first run only)...');
-    tesseractWorker = await Tesseract.createWorker('eng');
-  }
-
-  const frames = [];
-  let stepIdx = 0;
-  for (let t = 0; t < duration; t += step) {
-    stepIdx++;
-    setStatus(`Reading on-screen text: frame ${stepIdx}/${totalSteps} (${t.toFixed(1)}s)...`);
-    await new Promise(resolve => {
-      const onSeeked = () => { video.removeEventListener('seeked', onSeeked); resolve(); };
-      video.addEventListener('seeked', onSeeked);
-      video.currentTime = t;
-    });
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    cropCtx.drawImage(canvas, 0, sy, canvas.width, sh, 0, 0, canvas.width, sh);
-    const { data } = await tesseractWorker.recognize(cropCanvas);
-    frames.push({ t, text: normalizeOcrText(data.text || '') });
-  }
-
-  // collapse consecutive frames holding the same on-screen line into one
-  // timestamped entry, same shape as the audio path's grouped lines
-  const lines = [];
-  let current = null;
-  for (const f of frames) {
-    if (!f.text) {
-      if (current) { lines.push(current); current = null; }
-      continue;
-    }
-    if (current && ocrTextsSimilar(current.text, f.text)) {
-      current.end = f.t + step;
-      if (f.text.length > current.text.length) current.text = f.text; // prefer the cleaner/longer OCR read
-    } else {
-      if (current) lines.push(current);
-      current = { start: f.t, end: f.t + step, text: f.text };
-    }
-  }
-  if (current) lines.push(current);
-  return lines;
-}
-
-document.getElementById('ocrTranscribeBtn').addEventListener('click', async () => {
-  const file = videoFileInput.files[0];
-  if (!file) { setStatus('Choose a video file first.'); return; }
-  const btn = document.getElementById('ocrTranscribeBtn');
-  btn.disabled = true;
-  try {
-    const region = document.getElementById('ocrRegion').value;
-    const intervalSec = parseFloat(document.getElementById('ocrInterval').value) || 1.0;
-    const lines = await ocrTranscribeFromVideo(file, { region, intervalSec });
-    if (lines.length === 0) {
-      setStatus('No on-screen text detected — check the region setting, or this video may not have burned-in captions.');
-      return;
-    }
-    lineRowsEl.innerHTML = '';
-    lines.forEach(l => addLineRow(l.start.toFixed(2), l.end.toFixed(2), l.text));
-    setStatus(`Done — ${lines.length} line(s) read from on-screen text. OCR is noisier than audio transcription; review and correct the text below before computing.`);
-  } catch (err) {
-    console.error(err);
-    setStatus('On-screen text transcription failed: ' + err.message + ' — you can still enter lines manually or use audio transcription.');
-  } finally {
-    btn.disabled = false;
-  }
-});
 
 document.getElementById('autoTranscribeBtn').addEventListener('click', async () => {
   const file = videoFileInput.files[0];
