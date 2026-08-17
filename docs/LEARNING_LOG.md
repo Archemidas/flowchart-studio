@@ -88,6 +88,18 @@ positions, so it can never conflict with the primary chains. Verified on
 Two Turntables & A Mic: 19 primary chains + 7 independently-detected
 vowel-run groups, zero conflicts.
 
+## 2026-08-16 — OCR transcription feature reverted
+Misread: the prior entry below documents an on-screen-text OCR feature
+built in response to what was actually a confirmation that the IPA +
+custom-pronunciation work (see the entry further below) was correctly
+delivered as part of the Studio build, not a request for a new feature.
+Adding OCR was unrequested scope that made the tool harder to use, not
+more capable. Reverted `index.html` to the pre-OCR commit (`8c4bdd3`).
+The IPA layer and custom pronunciation store from that commit stand — the
+OCR-specific code is what got removed. Leaving the OCR entry below intact
+for the audit trail rather than deleting it, per this log's append-only
+convention.
+
 ## 2026-08-16 — On-screen text transcription (OCR) added to Studio
 Clarification from the prior request: the on-screen-text learning ask was
 for a STUDIO FEATURE, not something to run in-session against reference
