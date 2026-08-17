@@ -88,6 +88,34 @@ positions, so it can never conflict with the primary chains. Verified on
 Two Turntables & A Mic: 19 primary chains + 7 independently-detected
 vowel-run groups, zero conflicts.
 
+## 2026-08-16 — Compositional framework (201-210) integrated
+Reviewed a Duckdown-authored spec doc (Google Doc "(Flow Chart - Rhyme)")
+describing a 10-operation pipeline (Decomposition through Fusion) and a
+rhyme/meter ontology for computational lyric analysis — no lyric content
+in the source doc, only generic illustrative examples. Mapped every
+operation onto what `flowchart_engine.py` already does (full mapping in
+`docs/RHYME_GRAPH_FRAMEWORK.md`) and added the three things the framework
+called for that weren't built yet, all additive/non-breaking (verified:
+same 8-chain output on the existing regression test lines before and
+after):
+- `build_rhyme_graph()` — chains re-expressed as an explicit node/edge
+  graph (typed edges: rhyme / cross_word_rhyme / polyphonic_rhyme /
+  vowel_run), returned as `rhyme_graph` in `annotate_lines()`'s output.
+- `rhyme_strength_score()` — a continuous 0-1 score (tier baseline
+  modulated by temporal proximity) alongside the existing discrete tier,
+  on both `chains[]` and available per-chain.
+- `word_bar_index()` / `cross_bar` flag — chains and words now report
+  whether they span a bar boundary, computed from existing per-word
+  timestamps + bpm (only when bpm is provided; a flat downbeat-at-t=0
+  assumption, stated as an approximation, not wired to
+  tempo_meter.py's real downbeat phase yet).
+- `stress_pattern_string()` — an `S u S u` string per line, surfacing
+  stress flags the engine already computed internally.
+Deferred and documented as such: true vector-space embedding (folds into
+the already-planned graded phonetic matching workstream), performed vs.
+lexical stress (needs the forced-alignment workstream), musical notation
+integration (new, separate, not started).
+
 ## 2026-08-16 — Style Profile: export/import the house visual look
 Clarified request: teach Studio the visual style/method of Duckdown's OWN
 rhyme-scheme output (their own audio + lyric video + presentation
