@@ -88,6 +88,24 @@ positions, so it can never conflict with the primary chains. Verified on
 Two Turntables & A Mic: 19 primary chains + 7 independently-detected
 vowel-run groups, zero conflicts.
 
+## 2026-08-16 — Style Profile: export/import the house visual look
+Clarified request: teach Studio the visual style/method of Duckdown's OWN
+rhyme-scheme output (their own audio + lyric video + presentation
+approach) so future output matches — via a downloadable/uploadable JSON
+config, not a lyric-content feature at all. Built a Style Profile system:
+`DEFAULT_STYLE` (palette, font, active-word highlight mode, context-lines
+count) lives in `index.html`, editable via a new "04 Style Profile" panel
+(color swatches, font/highlight/context selectors), persisted to
+localStorage, and exportable/importable as `flowchart_style.json`.
+`cmu_engine.js` gained `setPalette()` so a loaded style actually changes
+the real engine's chain colors, not just a cosmetic overlay. Computed
+bundles now embed their style (`Export Bundle` includes a `style` key), so
+re-importing a bundle reproduces the exact look it was made with, and the
+style file can be handed to anyone else building on this catalog so their
+output matches without re-deriving the look by eye each time. Zero lyric
+content involved — this is a presentation-parameters preset, versioned and
+shareable like any other config file.
+
 ## 2026-08-16 — OCR transcription feature reverted
 Misread: the prior entry below documents an on-screen-text OCR feature
 built in response to what was actually a confirmation that the IPA +

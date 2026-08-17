@@ -20,6 +20,19 @@
 export const PALETTE = ["#e8a13c", "#5fb3a3", "#e0524a", "#8a7fd6", "#4aa3e0",
   "#d4af37", "#6fbf73", "#e07bb0", "#c98a4b", "#7a9fd6"];
 
+/**
+ * Overrides the chain-coloring palette in place (mutates the exported
+ * array rather than reassigning it, so every call site that already holds
+ * a reference to PALETTE sees the change). Lets a saved Style Profile
+ * (see index.html's Style panel) make annotateLines() actually output the
+ * house palette a track was styled with, not just a fixed default.
+ */
+export function setPalette(colors) {
+  if (!Array.isArray(colors) || colors.length === 0) return;
+  PALETTE.length = 0;
+  PALETTE.push(...colors);
+}
+
 const VOWELS = new Set(["AA","AE","AH","AO","AW","AY","EH","ER","EY","IH","IY","OW","OY","UH","UW"]);
 
 /* ============================================================================

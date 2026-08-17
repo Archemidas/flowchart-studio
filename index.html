@@ -134,8 +134,57 @@
     </div>
   </section>
 
+  <section>
+    <h2><span class="num">04</span> Style Profile</h2>
+    <div class="panel" id="stylePanel">
+      <p style="color:var(--dim);font-size:0.8rem;line-height:1.6;margin:0 0 1rem;">
+        This is the house look: chain colors, highlight style, and how much surrounding context shows.
+        Dial it in once for how you want your own rhyme-scheme output to look, then export it — every
+        computed Flow Chart and exported bundle carries this exact style, and you can re-import it later
+        or hand the JSON to someone else building on this catalog so their output matches.
+      </p>
+      <div id="paletteSwatches" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;"></div>
+      <div class="video-row" style="gap:1rem;">
+        <div>
+          <div style="font-size:0.72rem;color:var(--dim);margin-bottom:0.3rem;">Font</div>
+          <select id="styleFont" style="background:#0e1116;border:1px solid var(--line);color:var(--ink);padding:0.5rem;border-radius:5px;font-size:0.82rem;">
+            <option value="'JetBrains Mono',monospace">JetBrains Mono</option>
+            <option value="'Space Grotesk',sans-serif">Space Grotesk</option>
+            <option value="Georgia,serif">Georgia</option>
+            <option value="'Courier New',monospace">Courier New</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:0.72rem;color:var(--dim);margin-bottom:0.3rem;">Active-word emphasis</div>
+          <select id="styleHighlight" style="background:#0e1116;border:1px solid var(--line);color:var(--ink);padding:0.5rem;border-radius:5px;font-size:0.82rem;">
+            <option value="glow-underline">Glow + underline</option>
+            <option value="fill">Solid fill</option>
+            <option value="bold-only">Bold only</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:0.72rem;color:var(--dim);margin-bottom:0.3rem;">Context lines shown</div>
+          <select id="styleContext" style="background:#0e1116;border:1px solid var(--line);color:var(--ink);padding:0.5rem;border-radius:5px;font-size:0.82rem;">
+            <option value="0">Current line only</option>
+            <option value="1" selected>1 line before/after</option>
+            <option value="2">2 lines before/after</option>
+          </select>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="btn secondary" id="exportStyleBtn">Export Style (.json)</button>
+        <label class="btn secondary" style="cursor:pointer;">
+          Import Style (.json)
+          <input type="file" id="importStyleFile" accept="application/json" style="display:none;">
+        </label>
+        <button class="btn secondary" id="resetStyleBtn">Reset to Default</button>
+      </div>
+      <div id="styleStatus" class="mono" style="margin-top:0.6rem;font-size:0.72rem;color:var(--dim);"></div>
+    </div>
+  </section>
+
   <footer>
-    FLOW CHART STUDIO — DUCKDOWN RECORDS INTERNAL TOOL · v0.2 (real CMU phonemic engine, client-side)<br>
+    FLOW CHART STUDIO — DUCKDOWN RECORDS INTERNAL TOOL · v0.3 (real CMU phonemic engine + exportable/importable Style Profile)<br>
     Export produces a JSON bundle: {bpm, barsLookahead, lines:[{start,end,text,words:[{word,chain,color,strength,unitSize,crossWord}]}], chains:[...]}. Video is referenced by filename only — bring the actual video file along separately when handing the bundle off.
   </footer>
 
@@ -356,10 +405,122 @@ const fidelityNote = document.getElementById('fidelityNote');
 ensureCmuEngine().then(mod => {
   const customNote = mod._customCount ? ` + ${mod._customCount} custom pronunciation(s) from Duckdown's own catalog` : '';
   fidelityNote.innerHTML = `Running the real CMU Pronouncing Dictionary phonemic engine (${mod.cmuDictSize().toLocaleString()} words loaded${customNote}) — the same detection pipeline (tiers, complete-linkage clustering, BPM-adaptive window) as the server-side engine, verified word-for-word against it. Words not in the dictionary (proper nouns, slang, ad-libs) are skipped, same as server-side. Hover any colored word in the preview to see its IPA transcription.`;
+  applyPaletteToEngine();
 }).catch(err => {
   cmuEngineFailed = true;
   fidelityNote.innerHTML = `Could not load the CMU dictionary (${err.message}) — falling back to the spelling-based heuristic engine for this session. Reload the page on a working connection to get the real phonemic engine.`;
 });
+
+/* ============== STYLE PROFILE (house look, exportable/importable) ==============
+   Captures how YOUR OWN rhyme-scheme output should look — chain palette,
+   active-word emphasis, how much surrounding-line context shows — as a
+   small JSON object, separate from the lyric/chain DATA. Export it once
+   you've got the look right, re-import it later, or hand it to whoever
+   else builds on this catalog so their output matches. This is a style
+   preset, not song content — safe to save/share/version freely. */
+const DEFAULT_STYLE = {
+  version: 1,
+  palette: ["#e8a13c", "#5fb3a3", "#e0524a", "#8a7fd6", "#4aa3e0", "#d4af37", "#6fbf73", "#e07bb0", "#c98a4b", "#7a9fd6"],
+  font: "'JetBrains Mono',monospace",
+  highlightMode: "glow-underline", // glow-underline | fill | bold-only
+  contextLines: 1, // 0, 1, or 2 lines of faded context before/after the active line
+};
+
+let currentStyle = JSON.parse(JSON.stringify(DEFAULT_STYLE));
+
+function applyPaletteToEngine() {
+  if (cmuEngineReady && cmuEngineMod.setPalette) cmuEngineMod.setPalette(currentStyle.palette);
+}
+
+function loadStyleFromStorage() {
+  try {
+    const saved = localStorage.getItem('flowchart_style_v1');
+    if (saved) currentStyle = { ...DEFAULT_STYLE, ...JSON.parse(saved) };
+  } catch {}
+}
+
+function saveStyleToStorage() {
+  try { localStorage.setItem('flowchart_style_v1', JSON.stringify(currentStyle)); } catch {}
+}
+
+function renderPaletteSwatches() {
+  const container = document.getElementById('paletteSwatches');
+  container.innerHTML = '';
+  currentStyle.palette.forEach((color, i) => {
+    const wrap = document.createElement('label');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:0.25rem;cursor:pointer;';
+    const input = document.createElement('input');
+    input.type = 'color';
+    input.value = color;
+    input.style.cssText = 'width:36px;height:36px;border:none;border-radius:6px;background:none;cursor:pointer;';
+    input.addEventListener('input', () => {
+      currentStyle.palette[i] = input.value;
+      applyStyleChange();
+    });
+    const label = document.createElement('span');
+    label.style.cssText = 'font-size:0.6rem;color:var(--dim);font-family:JetBrains Mono,monospace;';
+    label.textContent = `chain ${i}`;
+    wrap.appendChild(input);
+    wrap.appendChild(label);
+    container.appendChild(wrap);
+  });
+}
+
+function syncStyleControlsToUI() {
+  document.getElementById('styleFont').value = currentStyle.font;
+  document.getElementById('styleHighlight').value = currentStyle.highlightMode;
+  document.getElementById('styleContext').value = String(currentStyle.contextLines);
+  renderPaletteSwatches();
+}
+
+function applyStyleChange() {
+  saveStyleToStorage();
+  applyPaletteToEngine();
+  previewPanel.style.fontFamily = currentStyle.font;
+  if (computedResult) { renderPreview(computedResult); }
+}
+
+document.getElementById('styleFont').addEventListener('change', e => { currentStyle.font = e.target.value; applyStyleChange(); });
+document.getElementById('styleHighlight').addEventListener('change', e => { currentStyle.highlightMode = e.target.value; applyStyleChange(); });
+document.getElementById('styleContext').addEventListener('change', e => { currentStyle.contextLines = parseInt(e.target.value, 10); applyStyleChange(); });
+
+document.getElementById('exportStyleBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(currentStyle, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'flowchart_style.json'; a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById('styleStatus').textContent = 'Style exported. Re-import this file any time to get this exact look back.';
+});
+
+document.getElementById('importStyleFile').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('styleStatus');
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    if (!parsed || !Array.isArray(parsed.palette)) throw new Error('Not a valid style file (missing palette array)');
+    currentStyle = { ...DEFAULT_STYLE, ...parsed };
+    syncStyleControlsToUI();
+    applyStyleChange();
+    statusEl.textContent = `Imported style from ${file.name}.`;
+  } catch (err) {
+    statusEl.textContent = 'Could not import style: ' + err.message;
+  }
+  e.target.value = '';
+});
+
+document.getElementById('resetStyleBtn').addEventListener('click', () => {
+  currentStyle = JSON.parse(JSON.stringify(DEFAULT_STYLE));
+  syncStyleControlsToUI();
+  applyStyleChange();
+  document.getElementById('styleStatus').textContent = 'Reset to default style.';
+});
+
+loadStyleFromStorage();
+syncStyleControlsToUI();
+applyStyleChange();
 
 videoFileInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
@@ -883,26 +1044,59 @@ function renderPreview(result) {
    are manually typed, not auto-transcribed). */
 const nowPlayingLine = document.getElementById('nowPlayingLine');
 
+// Active-word visual per the Style Profile's highlightMode — one function
+// so Preview, Now Playing, and (via the exported bundle) the club room can
+// all agree on what "the house look" actually renders as.
+function activeWordStyle(color) {
+  switch (currentStyle.highlightMode) {
+    case 'fill': return `background:${color};color:#0b0d10;padding:0.1rem 0.4rem;border-radius:4px;font-weight:700;`;
+    case 'bold-only': return `color:${color};font-weight:900;text-decoration:underline;text-underline-offset:3px;`;
+    case 'glow-underline':
+    default: return `background:${color}33;color:${color};border-bottom:3px solid ${color};padding:0.1rem 0.3rem;border-radius:3px;`;
+  }
+}
+
+function renderLineHtml(line, { active }) {
+  return line.words.map((w, i) => {
+    const color = w.chain !== null ? w.color : (active ? '#e8ecf1' : '#8b95a3');
+    const opacity = active ? 1 : (w.chain !== null ? 0.5 : 0.35);
+    return `<span style="color:${color};opacity:${opacity};">${escapeHtml(w.word)}</span>`;
+  }).join(' ');
+}
+
 function renderNowPlaying(t) {
   if (!computedResult) return;
+  nowPlayingLine.style.fontFamily = currentStyle.font;
   const lines = computedResult.lines;
   let idx = -1;
   for (let i = 0; i < lines.length; i++) { if (t >= lines[i].start) idx = i; else break; }
   if (idx === -1 || idx >= lines.length) { nowPlayingLine.innerHTML = '<span style="color:var(--dim);">&mdash;</span>'; return; }
+
+  const n = currentStyle.contextLines;
+  let html = '';
+  for (let li = idx - n; li < idx; li++) {
+    if (li < 0) continue;
+    html += `<div style="font-size:0.8em;margin-bottom:0.3rem;">${renderLineHtml(lines[li], { active: false })}</div>`;
+  }
+
   const line = lines[idx];
   const span = Math.max(0.001, line.end - line.start);
   const frac = Math.max(0, Math.min(0.999, (t - line.start) / span));
   const activeWordIdx = Math.floor(frac * line.words.length);
-
-  let html = '';
+  let activeHtml = '';
   line.words.forEach((w, i) => {
     const isActive = i === activeWordIdx;
     const color = w.chain !== null ? w.color : '#e8ecf1';
-    const style = isActive
-      ? `background:${color}33;color:${color};border-bottom:3px solid ${color};padding:0.1rem 0.3rem;border-radius:3px;`
-      : `color:${w.chain !== null ? color : '#8b95a3'};opacity:${w.chain !== null ? 0.85 : 0.55};`;
-    html += `<span style="${style}">${escapeHtml(w.word)}</span> `;
+    const style = isActive ? activeWordStyle(color) : `color:${w.chain !== null ? color : '#8b95a3'};opacity:${w.chain !== null ? 0.85 : 0.55};`;
+    activeHtml += `<span style="${style}">${escapeHtml(w.word)}</span> `;
   });
+  html += `<div>${activeHtml}</div>`;
+
+  for (let li = idx + 1; li <= idx + n; li++) {
+    if (li >= lines.length) continue;
+    html += `<div style="font-size:0.8em;margin-top:0.3rem;">${renderLineHtml(lines[li], { active: false })}</div>`;
+  }
+
   nowPlayingLine.innerHTML = html;
 }
 
@@ -916,7 +1110,11 @@ function escapeHtml(s) {
 
 exportBtn.addEventListener('click', () => {
   if (!computedResult) return;
-  const blob = new Blob([JSON.stringify(computedResult, null, 2)], { type: 'application/json' });
+  // Bundle carries its own style, so re-importing it later (or handing it
+  // to the club room / another builder) reproduces the exact same look,
+  // not just the same chain data.
+  const bundle = { ...computedResult, style: currentStyle };
+  const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
